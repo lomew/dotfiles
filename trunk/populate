@@ -1,0 +1,23 @@
+#!/usr/local/bin/perl -w
+# Run this from the place to be populated.
+
+opendir(DIR, "init/dot") || die "opendir init/dot: $!\n";
+while (defined($file = readdir(DIR))) {
+	$link = ".$file";
+	$file = "init/dot/$file";
+	next unless -f $file;
+	if (-e $link) {
+		if (-l $link) {
+			if (readlink($link) ne $file) {
+				warn "$link doesn't point to $file\n";
+			}
+		}
+		else {
+			warn "$link is not a link\n";
+		}
+	}
+	else {
+		print "linking $link -> $file\n";
+		symlink($file, $link) || warn "couldn't symlink $link -> $file: $!\n";
+	}
+}

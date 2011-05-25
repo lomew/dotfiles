@@ -1,0 +1,21 @@
+!!
+!! Make caps-lock be control and forget all about caps-lock
+!!
+remove Lock = Caps_Lock
+add Control = Caps_Lock
+keysym Caps_Lock = Control_L
+!!
+!! Make Meta_R do Control, to help alleviate Emacs Pinky Syndrome
+!!
+!remove Mod1 = Meta_R
+!add Control = Meta_R
+!keysym Meta_R = Control_R
+!!
+!! Swap caps-lock and control
+!!
+! remove Lock = Caps_Lock
+! remove Control = Control_L
+! keysym Control_L = Caps_Lock
+! keysym Caps_Lock = Control_L
+! add Lock = Caps_Lock
+! add Control = Control_L

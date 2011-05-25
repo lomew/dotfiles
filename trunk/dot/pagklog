@@ -1,0 +1,42 @@
+##
+## Source this from your .login/.customs.login to
+##	- put your tcsh in a pag then
+##	- run klog if it is needed
+## 
+## * The $version var is set only by tcsh (i.e. this won't make csh bomb)
+## * The special tcsh has "sp" in the $version string (6.05 has "afssetpag")
+## * The setpag builtin won't put us in a pag if we are in one
+##   already (-f flag overrides).  That is so if you are using the afs
+##   login/xdm you won't be put in a *different* pag (i.e. lose your
+##   tokens you got from login/xdm).
+## * When we get tokens we print out "[pag]" if we are in a pag and then
+##   "AFS" to remind us that we must type our afs passwd.  i.e. you'll
+##   see either
+##		[pag] AFS Password: _
+##   or
+##		AFS Password: _
+## * The current heuristic for PAGhood detection is to check our
+##   grouplist ("$(" in perl) for two ints >= 0x7f00.  This was
+##   confirmed by a Transarc systems programmer (Lyle Seaman).
+## * Report probs to lomew@cs
+##
+
+if ($?version) then
+    ## 6.05 uses afssetpag, 6.06 uses ,sp
+    if ("$version" =~ *,sp* || "$version" =~ *,afssetpag*) setpag
+endif
+
+if (-e /usr/afsws/bin) then
+    set found = "`tokens | grep Expires`"
+    if ("$found" == "") then
+	perl -e 'print "[pag] " if (grep($_ >= 0x7f00, split(" ", $()) == 2)'
+	echo -n "AFS "
+	klog
+	tokens | grep Expires
+    else
+	echo $found
+    endif
+    unset found
+endif
+
+### .pagklog ends here 

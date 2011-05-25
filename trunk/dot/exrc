@@ -1,0 +1,15 @@
+set showmatch ignorecase
+set sh=/bin/sh
+" these two are bogus
+" map =X :s/.*/\U&/
+" map u biwik=XkJJ
+set showmode
+set nobackup
+" for 4sp indent (see also cindent/smartindent) :- set sw=4 sta ai
+map =c :!chmod +w %
+map =D Ifprintf(stderr, "* 1: %s\n", __FUNCTION__);
+map =i :set sw=4 sta ai
+" Hack for ChangeLog entries.
+map  1GO:r !date2G$bbdwA  Bart Robinson  <lomew@:r!hostnamekJxA>kddo	* 
+set background=dark
+set nohlsearch

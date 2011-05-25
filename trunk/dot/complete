@@ -1,0 +1,66 @@
+## .complete - customizations for tcsh (6.02 or above) completion feature
+
+if ($?prompt) echo "Running .complete..."
+
+## complete with user names
+# complete ps			'n/-*u/u/' 'c/-*u/u/'
+# complete finger			'n/*/u/'
+
+## protect some special files
+complete rm		'n/*/f:^{.*,*.{c,cc,C},*.{h,hh,H},*.scm,*.el{,c}}/'
+
+## complete with environ vars
+complete {{,set,unset,print}env}	'p/1/e/'
+complete unalias		'p/1/a/'
+
+## complete with jobs
+complete {-%*,fg,bg}		'c/%/j/'
+complete kill			'c/-/S/' 'c/%/j/'
+
+## complete with directories
+complete {cd,pd,chdir,pushd}	'p/1/d/'
+
+complete latex			'n/*/f:*.{tex,ltx}/'
+complete {xdvi,dvips,dvitty}	'n/*/f:*.dvi/'
+complete {ghostview,gv,gs}	'n/*/f:*.{ps,eps,pdf,PS,EPS,PDF}/'
+complete xpdf			'n/*/f:*.{pdf,PDF}/'
+
+complete javac			'n/*/f:*.java/'
+
+## Complete -I and -L flags to gcc/cc with directories.
+complete *cc			'c/-I/d/' 'c/-L/d/'
+complete *cc4			'c/-I/d/' 'c/-L/d/'
+complete {g++,c++}		'c/-I/d/' 'c/-L/d/'
+complete {g++4,c++4}		'c/-I/d/' 'c/-L/d/'
+
+## Complete the of= and if= options to dd with filenames.
+complete dd			'c/if=/f/' 'c/of=/f/'
+
+## Complete file:// urls with local filenames
+## complete the tag and branch portions of sport svn urls
+## the sed part is to get around autocompletion adding more slashes
+#complete svn			'p/1/(add blame annotate cat checkout cleanup commit copy delete remove diff export help import info list lock log merge mkdir move rename propdel propedit propget proplist propset resolved revert status switch unlock update)/' 'c|file://|f|'
+complete svn \
+'p/1/(add blame annotate cat checkout cleanup commit copy delete remove diff export help import info list lock log merge mkdir move rename propdel propedit propget proplist propset resolved revert status switch unlock update)/' \
+'c|file://|f|' \
+'c,svn://svn/sport/branches/,`svn ls svn://svn/sport/branches | sed sX/XX`,/,' \
+'c,svn://svn/sport/tags/,`svn ls svn://svn/sport/tags | sed sX/XX`,/,' \
+'c,svn://svn/sport/,`svn ls svn://svn/sport | sed sX/XX`,/,' \
+'c,svn://svn/bass/branches/,`svn ls svn://svn/bass/branches | sed sX/XX`,/,' \
+'c,svn://svn/bass/tags/,`svn ls svn://svn/bass/tags | sed sX/XX`,/,' \
+'c,svn://svn/bass/,`svn ls svn://svn/bass | sed sX/XX`,/,' \
+'c,svn://svn/shmobile/branches/,`svn ls svn://svn/shmobile/branches | sed sX/XX`,/,' \
+'c,svn://svn/shmobile/tags/,`svn ls svn://svn/shmobile/tags | sed sX/XX`,/,' \
+'c,svn://svn/shmobile/,`svn ls svn://svn/shmobile | sed sX/XX`,/,' \
+'c,svn://svn/rbtcore/branches/,`svn ls svn://svn/rbtcore/branches | sed sX/XX`,/,' \
+'c,svn://svn/rbtcore/tags/,`svn ls svn://svn/rbtcore/tags | sed sX/XX`,/,' \
+'c,svn://svn/rbtcore/,`svn ls svn://svn/rbtcore | sed sX/XX`,/,'
+
+## Complete -M flag to man with directories.
+complete man			'c/-M/d/'
+
+## complete "service" command with stuff from /etc/rc.d/init.d
+complete su1			'p/1/c/' 'n|service|F:/etc/rc.d/init.d|'
+
+## complete, e.g., --with-tmslib=DIR
+complete *configure		'c/--with-*=/d/'

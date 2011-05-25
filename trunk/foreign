@@ -1,0 +1,15 @@
+#!/usr/local/bin/perl -w
+# run from the dir you want checked
+
+opendir(DIR, ".") || die "opendir '.': $!\n";
+@filelist = sort grep(/^\./, readdir(DIR));
+foreach $file (@filelist) {
+	next if ($file eq "." || $file eq "..");
+	$file_no_dot = substr($file, 1);
+	if (-l $file && readlink($file) ne "init/dot/$file_no_dot") {
+		warn "$file points to ", readlink($file), "\n";
+	}
+	if (! -l _) {
+		warn "$file is not a link\n";
+	}
+}

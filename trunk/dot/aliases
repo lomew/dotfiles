@@ -1,0 +1,120 @@
+### .aliaes
+
+if ($?prompt) echo "Running .aliases..."
+
+alias frmc	'frm ~/priv/carrie.spool'
+alias dmalloc 'eval `\dmalloc -C \!*`'
+
+alias fixkbd	'xset r rate 1; xset r rate 0; kbdrate -r 30 -d 250'
+alias pg	'ps augxww|grep'
+alias vm-movemail /usr/local/lib/xemacs-20.4/i386-unknown-freebsd2.2.5/movemail /var/mail/lomew $HOME/Mail/VM.CRASH
+alias newmail	'frm -n | tail'
+alias country	'grep -i "^\!:1 " ~/lib/tables/inet-country-codes.txt'
+alias oskiterr	'grep \!:1 ~/oskit/oskit/error.h'
+alias console	'xterm -C -name xterm-console -e sh -c "cat >/dev/null"'
+alias lefty	'xmodmap -e "pointer = 3 2 1"'
+alias righty	'xmodmap -e "pointer = 1 2 3"'
+alias mbi	mkbsdimage
+alias kgdb	/n/fast/usr/lsrc/flux/tools/bin/i586-fluke-gdb
+alias jptime	env TZ=Asia/Tokyo date
+
+set ch = '*.[chCH]'
+
+alias ls	'ls -FC'
+alias la	'ls -a'
+alias ll	'ls -lah'
+alias lt	'll -tr'
+if ($TERM != t10) then
+	alias cd	'cd -v \!* && ls'
+endif
+alias :cd	'chdir'
+alias mv	'mv -i'
+alias rm 	'rm -i'
+alias cp	'cp -i'
+
+alias pd	'pushd -v'
+alias o		'popd -v'
+alias d		'dirs -v'
+
+## Two ways to list directories only, and one to show only dots
+## the second one includes symlinks that point to dirs
+alias ds1	'\ls -F \!* | egrep /'
+alias ds	'\ls -f . | perl -lne '"'"'next if /^\.\.?$/; print "$_/" if -d'"'"' | xargs ls -d'
+alias dots 	'\ls -dFC \!* .*'
+
+alias ex	'chmod a+x'
+
+alias pwd	'echo $cwd'
+alias lookat	'set _x = `which \!:1`; ls -l $_x; echo "[hit ret]"; echo $<; less $_x'
+alias nman	'nroff -man \!* | col | less -s'
+alias lpr	'lpr \!* && lpq `echo \!* | awk '"'"'/^-P/ {print $1; if (length($1) == 2) print $2}'"'"'`'
+alias sds	'setenv DISPLAY \!*'
+alias h		'history'
+alias jobs	'jobs -l'
+alias j		'jobs'
+alias -		'%-'
+alias ..	'cd ..'
+alias ../..	'cd ../..'
+alias ../../..	'cd ../../..'
+alias cd..	'cd ..'
+alias blh	'cp \!:1 \!:1.$$ && mv -f \!:1.$$ \!:1'	# Bring Link Here
+alias texclean	'/bin/rm -f *.dvi *.log *.aux *.bbl *.blg *.toc'
+# alias dotdist	'(chdir && /usr/ucb/rdist -f ~/.distfile \!*)'
+alias cdrw	'cd `\pwd | sed "s-/afs/-/afs/.-"`'
+alias dectohex  'echo "16o10i\!:1p" | dc'
+alias :pagsh	'exec pagsh -c "exec /bin/tcsh"'
+# alias localro	'(chdir /usr && su1 sh -c "mv local local.ro && ln -s /afs/.cs.utah.edu/@sys/usr/local ." && rehash)'
+# alias localfix	'(chdir /usr && su1 sh -c "rm local && mv local.ro local" && rehash)'
+alias weak	'weak \!* | less'
+alias les	'less'
+alias zless	'zmore'
+# have script now
+# alias mailgrep	'agrep -d "^From "'
+alias lman	'man -M/usr/local/man'
+alias gman	'man -M/usr/local/gnu/man'
+alias sman	'man -M/usr/man'
+alias Files	'diff -u \!:1 \!:3'	# hack for pasting diff --brief output
+alias rless	'co -p \!:1 | less'	# for browsing *,v files
+# alias ec	emacsclient
+alias yay	'echo wow'
+alias wow	'echo yay'
+alias PS	/usr/ucb/ps
+alias ymd	'date +%y%m%d'
+alias udiff	'cvs diff -rBASE -rHEAD'
+alias diff	'diff -u'
+alias rcsdiff	'rcsdiff -u'
+alias ud	'cd `dirname $cwd`'	# cd out of symlinks
+# modern cvs has a -C option to update
+alias cvs-discard 'rm -f \!* && cvs update \!*'
+alias cvs-whoisfuckingme "find /repository/sport -name '#*' -ls"
+alias rfcless	'sed '"'"'s/^[ 	]*$//'"'"' < \!:1 | less -s'
+alias vncviewer-local 'vncviewer -encodings "copyrect hextile"'
+alias mail 'echo respect me'
+alias Mail 'echo respect me'
+alias mailx /bin/mail
+alias ergrep 'grep \!:1 /usr/include/asm/errno.h'
+alias t todo.sh
+
+## in the xterm esc seq ']n;text^G' n can be:
+##	2 - title name
+##	1 - icon name
+##	0 - both title and icon name
+##	50 - font name
+alias st	'echo -n "]0;\!*"'
+alias sf 	'echo -n "]50;\!:1"'
+alias fontgood	fontsmall
+alias fonttiny	'sf lucidasanstypewriter-10'
+alias fontsmall	'sf lucidasanstypewriter-12'
+alias fontmed	'sf lucidasanstypewriter-14'
+alias fontlarge	'sf lucidasanstypewriter-18'
+alias fonthuge	'sf lucidasanstypewriter-24'
+
+switch ($SYS)
+    case *hpux*:
+	alias df	'bdf'
+	breaksw
+    case *hpbsd*:
+	alias locate	/usr/bin/find
+	alias swapinfo	pstat -w
+	breaksw
+endsw

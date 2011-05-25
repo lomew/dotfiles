@@ -1,0 +1,62 @@
+set indentprefix=" > "		#quote prefix
+set crt=40			#num lines before feed to pager
+set ignoreeof			# . must end message
+set keep			#don't remove spool file, truncate
+set SHELL=/bin/sh
+unset autoprint
+
+ignore Received Message-Id X-Mailer
+# these are also looked at by emacs (xemacs expands as you type)
+# do M-x rebuild-mail-aliases to rebuild
+# alias andrew	alsv@voicenet.com
+alias ola	"Aleksandra Kuswik <kuswik@cse.ucsc.edu>"
+alias ola2	"Aleksandra Kuswik <aleksk@emu.com>"
+alias orion	OrionEberhardt@hotmail.com
+alias billr	"William J Roper <william.roper@m.cc.utah.edu>"
+alias billr2	bill@ilovemagic.com
+alias wteam	"Rex Baker <rbaker@eng>" \
+		"Chris Nuccitelli <slothdog@weirdness.com>"
+alias efros	"Alyosha Efros <efros@cs.berkeley.edu>"
+alias j		lepreau@cs.utah.edu
+alias shauna	Shauna.Davis@m.cc.utah.edu
+alias house	"David G Andersen <danderse@cs.utah.edu>" \
+		"John McCorquodale <mcq@cs.utah.edu>" \
+		"stephen clawson <sclawson@cs.utah.edu>"
+alias mavie	"mavie_coates@yahoo.com"
+alias mavie2	"Mavie Coates <maviec@eecs.berkeley.edu>"
+alias carrie	Carrie.Turner@hci.utah.edu
+alias john	"John Lucchetti <johnlucchetti@hotmail.com>"
+alias joey	"Private Peck <maze@sisna.com>"
+alias spencer	"Spencer Jacobs <gentlepunk@yahoo.com>"
+alias derrick	"Derrick Diggler <CMCGW#c#CMCGW.COMOUPO#c#dhalls@fscnet.com>"
+alias derrick2	"Derrick Diggler <progessic@aol.com>"
+alias matt	"Matt Woolsey <mcwoolsey@netscape.net>"
+alias fun	john,joey,spencer,derrick,matt
+alias anand	"Anand Ranganathan <anand@blandings.com>"
+alias dad	"Reed Robinson <jrrobinson@uswest.net>"
+alias bryan	"Bryan_A_Ford@Phobos.COM"
+alias edgel	"Edgel R. Gillespie II <edgelgil@burgoyne.com>"
+alias bobwater	"Robert Murdock <rmurdock@addwater.com>"
+alias bobphone	"Robert Murdock <5108727023@messaging.sprintpcs.com>"
+alias bob	"Robert Murdock <robert@tzech.com>"
+alias g2	aswan,nix,chaffee
+alias lcvs-users chaffee,aswan,hoofar,bill,gk
+alias blake	"Blake Stevens <bstevens@stanford.edu>"
+alias mandie	MandieJensen@prodigy.net
+alias cdub	"Christian Waters <christianwaters@hotmail.com>"
+alias tbag	"Ron T. Bagley <RBagley@Radicainnovations.com>"
+alias madison	"Madison Mount <madison@scoutelectromedia.com>"
+alias stina	"Stina Peterson <stina@primeslc.com>"
+alias jared	"Jared Eberhardt <jared_eberhardt@jdk.com>"
+alias trish	"Trisha McBride <trisha_mcbride@hotmail.com>"
+alias johnd	"John Francis Deyto <deyto@excitehome.net>"
+alias chrisp	"Chris Purvis <chrisp@415.com>"
+alias jenn	"Jennifer Reeves <mr_blume@hotmail.com>"
+alias jennphone	"Jennifer Reeves <4158715366@messaging.sprintpcs.com>"
+alias myphone	"Bart Robinson <4153171856@vtext.com>"
+alias rong	"Ron Kurti <ron@kurti.com>"
+alias spamsubmit gsubmit@submit-1.brightmail.com
+alias yme	bart_r_robinson@yahoo.com
+alias gme	bartarr@gmail.com
+# rvbd-it - talk to people
+# itsupport - open a ticket

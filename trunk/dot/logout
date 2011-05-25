@@ -1,0 +1,5 @@
+### .logout
+
+if ("`tty`" =~ {*console,*hft*}) clear
+
+perl -e '`unlog` unless (grep($_ >= 0x7f00, split(" ", $()) == 2)'

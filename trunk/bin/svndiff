@@ -1,0 +1,7 @@
+#!/bin/sh
+# override the internal svn diff, which doesn't do -p by default
+# (it support -x-p but can't seem to set that in config)
+# change ~/.subversion/config to have 
+# diff-cmd = /Users/bart/bin/svndiff
+# in [helpers]
+exec diff -p "$@"

@@ -1,0 +1,7 @@
+meta-p: history-search-backward
+meta-n: history-search-forward
+control-u: kill-whole-line
+control-w: kill-region
+meta-w: copy-region-as-kill
+set show-all-if-ambiguous On
+set visible-stats On

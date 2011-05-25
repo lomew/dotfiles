@@ -1,0 +1,352 @@
+## .twmrc
+##
+## Three sections:
+##	variables
+##	bindings
+##	menus
+## most non-portable parts: Icons, Pixmaps, UnknownIcon,
+##	TitleButtons, .Xresources, QUITPID, Command menu, Hosts menu
+
+
+##======================================================================
+## Variables
+
+TitleFont	"-adobe-helvetica-bold-o-normal*120*"
+ResizeFont	"-adobe-helvetica-bold-r-normal*120*"
+MenuFont	"-adobe-helvetica-bold-o-normal*120*"
+IconFont	"-adobe-helvetica-bold-r-normal*100*"
+IconManagerFont	"-adobe-helvetica-medium-r-normal*100*"
+
+## for tvtwm
+# VirtualDesktop "3x3"
+# OpaqueMove
+# PannerOpaqueScroll
+# StickyAbove
+# ShowVirtualNames
+
+# AutoRaise
+AutoRelativeResize
+BorderWidth 5
+# ButtonIndent 0
+# ClientBorderWidth
+Color {
+	BorderTileBackground "gray60"
+	BorderTileForeground "gray60"
+	BorderColor "slategrey"
+	IconBackground "gray80"
+	IconForeground "black"
+	IconManagerBackground "seagreen4"
+	IconManagerForeground "white"
+	TitleBackground "gray80"
+	TitleForeground "black"
+	MenuBackground "deepskyblue4" #"turquoise4" #"gray40"
+	MenuForeground "white"
+	MenuTitleBackground "cadetblue" #"gray55"
+	MenuTitleForeground "black"
+}
+# ConstrainedMoveTime
+Cursors {
+	Frame	"target"
+	Menu	"arrow"
+	Resize	"sizing"
+}
+DecorateTransients		# transient windows get titlebars
+DontIconifyByUnmapping {
+	## WARNING: make same as IconManagerDontShow to not lose windows
+	"xload"
+	"XBiff"
+	"xclock"
+	"xterm-console"
+	"Lxt"
+}
+DontMoveOff
+# DontSqueezeTitle
+# ForceIcons
+# FramePadding
+# IconBorderWidth 0
+# IconDirectory "~/Pics"	# use *bitmapFilePath instead
+IconifyByUnmapping
+IconManagerDontShow {
+	## WARNING: see DontIconifyByUnmapping
+	"xload"
+	"XBiff"
+	"xclock"
+	"xterm-console"
+	"Lxt"
+}
+IconManagerGeometry "1024x40" 10
+# IconManagers
+# IconManagerShow
+IconRegion "500x300-1+1" North East 40 40
+Icons {
+	"XTerm" "terminal"
+}
+# InterpolateMenuColors
+# MakeTitle
+# MaxWindowSize
+Monochrome {
+	IconManagerForeground "white"
+	IconManagerBackground "black"
+	IconManagerHighlight "white"
+	IconForeground "white"
+	IconBackground "black"
+	IconBorderColor "white"
+}
+MoveDelta 3		# distance for pointer to move until f.move kicks in
+# NoBackingStore	# XXXgraphon
+NoCaseSensitive		# sorting not case sensitive
+NoDefaults
+NoGrabServer
+NoHighlight		# XXXgraphon
+# NoIconManagers
+# NoMenuShadows
+# NoRaiseOnDeiconify
+# NoRaiseOnMove		# slide under each other
+# NoRaiseOnResize	# resize under each other
+# NoRaiseOnWarp
+# NoSaveUnders		#XXXgraphon
+NoTitle  {
+	"xdaliclock"
+	"xload"
+	"XBiff"
+	"xclock"
+	"xlogo"
+	"xterm-console"
+	"TWM Icon Manager"
+	"topBox"
+	"toolchest"
+	"Lxt"
+	"Timex"
+}
+# NoTitleFocus		# NB: prevents input going to wrong window
+NoTitleHighlight	# XXXgraphon
+# OpaqueMove		# move whole window, instead of outline
+# Pixmaps {
+#	TitleHighlight "box19.xbm"	# tiling pattern for title bar
+# }
+RandomPlacement
+RestartPreviousState
+ShowIconManager		# iconmgr not hidden
+SortIconManager
+# SqueezeTitle
+# StartIconified
+# TitleButtonBorderWidth 0
+# TitlePadding
+UnknownIcon "xlogo32"	# default icon is X
+# UsePPosition
+WarpCursor
+WindowRing {
+	"xterm-local"
+	"emacs"
+	"xterm-solitude"
+	"Emacs"
+	"MapleV"
+	"XTerm"
+}
+WarpUnmapped		# f.warpto deiconifies windows
+XorValue 1
+Zoom 50			# macintosh style border trail when (de)iconified
+
+DefaultFunction f.beep	# must be last
+# WindowFunction	# must be last
+
+
+##======================================================================
+## Bindings
+
+Function "move-or-raiselower" {f.move f.deltastop f.raiselower}
+Function "forcemove-or-raiselower" {f.forcemove f.deltastop f.raiselower}
+
+# RightTitleButton "vzoom.xbm" = f.zoom
+# RightTitleButton "hzoom.xbm" = f.hzoom
+# RightTitleButton ":resize" = f.resize
+# LeftTitleButton "dropbar8" = f.menu "Winmenu"
+## window | title | icon | root | frame | iconmgr
+
+## menu bindings
+Button1 = : root : f.menu "Twm"
+Button2 = : root : f.menu "Commands"
+Button3 = : root : f.menu "Hosts"
+
+## NB: Do not bind control-Buttonx, because that prevents xterm menu selection
+Button1 = c|s : all : f.menu "Twm"
+Button2 = c|s : all : f.menu "Commands"
+Button3 = c|s : all : f.menu "Hosts"
+
+## motion bindings
+Button1 = : title : f.function "move-or-raiselower"
+ Button1 = m : title : f.function "forcemove-or-raiselower"
+Button2 = : title : f.iconify
+Button3 = : title : f.menu "Winmenu"	# openlook style
+
+Button1 = : icon|iconmgr : f.iconify
+Button2 = : icon|iconmgr : f.iconify
+Button3 = : icon|iconmgr : f.menu "Winmenu"
+
+Button1 = m : window : f.function "move-or-raiselower"
+ Button1 = m|s : window : f.function "forcemove-or-raiselower"
+Button2 = m : window : f.iconify
+Button3 = m : window : f.menu "Winmenu"
+
+## resize via border
+Button1 = : frame : f.resize
+Button2 = : frame : f.resize
+Button3 = : frame : f.resize
+
+## convenience bindings
+Button1 = m : root : f.identify
+Button2 = m : root : f.refresh
+Button3 = m : root : f.destroy
+
+## cxterm uses f-keys, but I don't use cxterm
+"F1" = : all : f.iconify
+ "F1" = m : all : !"xlock -mode blank &"
+"F2" = : all : f.raiselower
+ "F2" = m : all  : f.warptoscreen "next"
+"F3" = : all : f.warpring "next"
+
+"F5" = : all : f.warpto "Emacs"
+
+"F8" = : all : f.warpto "xterm-local"
+"F9" = : all : f.warpto "xdvi"
+
+"Left" = m|s : all : f.backiconmgr
+"Right" = m|s : all : f.forwiconmgr
+"Return"= m|s : all : f.iconify
+
+
+##======================================================================
+## Menus
+
+
+##----------------------------------------------------------------------
+## Twm menu
+
+menu "Twm" {
+	"Twm"			f.title
+	"TwmWindows"		f.menu "TwmWindows"
+	""			f.nop
+	"Focus"			f.focus
+	"Identify"		f.identify
+	"Refresh"		f.refresh
+	"Force move"		f.forcemove
+	"Resize"		f.resize
+	""			f.nop
+	"Delete" 		f.delete
+	"Kill" 			f.destroy
+	""			f.nop
+	"Restart twm"		f.restart
+	"Quit"	 		f.menu "Quits"
+}
+
+menu "Quits" {
+	"Quits"			f.title
+	"Quit Twm"		f.quit
+	"Quit X"		!"kill $QUITPID"	# see .xinitrc
+}
+
+
+##----------------------------------------------------------------------
+## Commands menu
+
+menu "Commands" {
+	"Commands"		f.title
+	"XEmacs"		!"xemacs &"
+	"Emacs"			!"emacs &"
+	"Xmaple"		!"xmaple &"
+	""			f.nop
+	"Processes"		!"xterm -title Processes -name top -e top &"
+	"Print Queue"		!"lpwatch &"
+	""			f.nop
+	"Background"		f.menu "Background"
+	"Lock Screen"		f.menu "Locks"
+	""			f.nop
+	"Load .Xresources"	!"xrdb -load $HOME/.Xresources"
+	"Merge .Xresources"	!"xrdb -merge $HOME/.Xresources"
+	""			f.nop
+	"Manual Pages"		!"xman &"
+	"Magnifier"		!"xmag -z &"
+}
+
+menu "Background" {
+	"Background"		f.title
+	"Default"		!"xsetroot -bitmap \
+			 /usr/include/X11/bitmaps/root_weave&"
+	"Turquoise"		!"xsetroot -bitmap \
+			/usr/include/X11/bitmaps/root_weave -bg turquoise4&"
+}
+
+menu "Locks" {
+	"Locks"			f.title
+	"Lines"			!"xlock -nice 100 -allowroot -mode qix &"
+	"Life"			!"xlock -nice 100 -allowroot -mode life &"
+	"Swarm"			!"xlock -nice 100 -allowroot -mode swarm &"
+	"Fireworks"		!"xlock -nice 100 -allowroot -mode pyro &"
+	"Stars"			!"xlock -nice 100 -allowroot -mode stars &"
+	"Blank"			!"xlock -nice 100 -allowroot -mode blank &"
+	"Ziggy"			!"xnlock -ar '' &"
+}
+
+
+##----------------------------------------------------------------------
+## Hosts menu
+
+menu "Hosts" {
+	"Hosts"			f.title
+	"Local"			!"xterm -name xterm-local &"
+	"Cs"			f.menu "Cs"
+	"Math"			f.menu "Math"
+	"gate.cs"		!"xterm -title gate.cs -e telnet gate.cs &"
+	"Library"		!"xterm -name xterm-lib \
+					-e tn3270 lib.utah.edu &"
+	"Dec alpha"		!"xterm -title axposf.pa.dec.com \
+					-e rsh axposf.pa.dec.com -l llomew &"
+	"Internet"		f.menu "Internet"
+}
+
+menu "Cs" {
+	"Cs"			f.title
+	"a1fs"			!"rterm a1fs.cs &"
+	"asylum"		!"rterm asylum.cs &"
+	"cadesm0"		!"rterm cadesm0.eng &"
+	"cs"			!"rterm cs &"
+	"emily"			!"rterm emily.cs &"
+	"fast"			!"rterm fast.cs &"
+	"filesave"		!"rterm filesave.cs &"
+	"jaguar"		!"rterm jaguar.cs &"
+	"kira"			!"rterm kira.cs &"
+	"lal"			!"rterm lal.cs &"
+	"sal"			!"rterm sal.cs &"
+	"scylla"		!"rterm scylla.eng &"
+	"sunset"		!"rterm sunset.cs &"
+}
+
+menu "Math" {
+	"Math"			f.title
+	"solitude"		!"rterm solitude.math &"
+	"jeeves"		!"rterm jeeves.math &"
+}
+
+menu "Internet" {
+	"Internet"		f.title
+	## for some odd reason, ncftp needs the +ut to find my login name
+	"Ftp"			!"xterm +ut -e ncftp &"
+	"Telnet"		!"xterm -e telnet &"
+	"Archie"		!"xarchie &"
+	"Gopher"		!"xgopher &"
+	"WWW"			!"xmosaic >/dev/null 2>&1 &"
+}
+
+
+##----------------------------------------------------------------------
+## Winmenu
+
+menu "Winmenu" {
+	"Tall"			f.zoom
+	"Wide"			f.hzoom
+	"Full"			f.fullzoom
+	"Identify"		f.identify
+	""			f.nop
+	"Delete"		f.delete
+	"Kill"			f.destroy
+}

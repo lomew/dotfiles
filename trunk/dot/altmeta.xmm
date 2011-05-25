@@ -1,0 +1,22 @@
+!! make alt be meta
+!
+!clear Mod1
+!
+!keysym Alt_L = Meta_L
+!add Mod1 = Meta_L
+!
+!keysym Alt_R = Meta_R
+!add Mod1 = Meta_R
+!! Swap alt with meta.  The idea is to have the keys near the spacebar
+!! be meta and the ones next to those be alt.
+!! They have to have different modifier bits too.
+clear Mod1
+clear Mod4
+keysym Alt_R = Meta_R
+!keysym Meta_R = Alt_R
+keysym Super_R = Alt_R
+keysym Alt_L = Meta_L
+!keysym Meta_L = Alt_L
+keysym Super_L = Alt_L
+add Mod1 = Meta_L Meta_R
+add Mod4 = Alt_L Alt_R

@@ -1,0 +1,367 @@
+### ORDER MATTERS!!
+## 1. Colors
+## 2. Assorted configuration paramters such as ClickToFocus, or MWMBorders
+## 3. Path setup (ModulePath, PixmapPath, IconPath)
+## 4. Style settings, including the default style Style "*" ...
+## 5. InitFunction and ResetFunction definitions.
+## 6. Other Functions. Functions cannot be forward referenced from
+##	other functions, but they can be backward referenced.
+## 7. Menus definitions. Same caveats about forward referencing
+## 8. Key and Mouse Bindings.
+## 9. Module options.
+##
+## The order of steps 5, 6, and 7 is not critical, as long as there are
+## no forward references to functions or menus.
+
+
+###=====================================================================
+### Colors
+
+## For selected windows
+HiForeColor white
+HiForeColor lemonchiffon
+#
+HiBackColor maroon
+HiBackColor #9f0052
+HiBackColor SkyBlue4
+HiBackColor red4
+HiBackColor #4d4d5d
+
+## Unselected windows
+StdForeColor Black
+StdForeColor white
+#
+StdBackColor CadetBlue
+StdBackColor gray80
+
+## Stickies
+StickyForeColor Black
+#
+StickyBackColor CadetBlue
+StickyBackColor SkyBlue4
+StickyBackColor red4
+StickyBackColor #4d4d5d
+
+## The pager
+PagerBackColor Gray80
+#
+PagerForeColor SkyBlue3
+PagerForeColor limegreen
+
+## Menus
+MenuForeColor Black
+MenuForeColor lemonchiffon
+#
+MenuBackColor maroon
+MenuBackColor #9f0052
+MenuBackColor SkyBlue4
+MenuBackColor red4
+MenuBackColor #4d4d5d
+#
+MenuStippleColor limegreen
+
+
+###=====================================================================
+### Asstd Configs
+
+# Lomew-specific hacked-in options
+FlushTitleLeft
+WarpCenter
+
+## Fonts
+#Font -adobe-helvetica-bold-r-normal*120*
+Font -adobe-helvetica-bold-r-normal*140*
+# IconFont fontname
+# PagerFont -schumacher-*-medium-r-*-*-6-*-*-*-*-40-*-*
+#WindowFont -adobe-helvetica-bold-r-normal*120*
+WindowFont -adobe-helvetica-bold-r-normal*140*
+
+## Focusing
+# AutoRaise delay
+# ClickToFocus
+SloppyFocus
+
+## Icon specs
+IconBox 0 0 -1 100
+# SuppressIcons
+# StubbornIcons
+# StubbornIconPlacement
+StickyIcons
+Icon "Emacs" gnu-animal.xpm
+Icon "XTerm" rterm.xpm
+Icon "xterm-local" xterm.xpm
+
+## Motifness
+# MWMBorders
+# MWMButtons
+MWMDecorHints
+# MWMFunctionHints
+# MWMHintOverride
+# MWMMenus
+
+## Window placement
+RandomPlacement
+SmartPlacement
+# StubbornPlacement
+NoPPosition
+
+## Moving/resizing
+# CenterOnCirculate
+# CirculateSkip
+# CirculateSkipIcons
+DontMoveOff
+EdgeResistance 500 32
+EdgeScroll 100000 100000
+# OpaqueMove percentage
+# OpaqueResize
+# PagingDefault pagingdefaultvalue
+# WindowListSkip windowname
+
+## Sizes
+BoundaryWidth 7
+# DeskTopScale Scale
+DeskTopSize 1x1 #xxx
+# NoBorder
+NoBoundaryWidth 5
+# NoTitle
+#Pager 1 -1 #xxx
+
+## Misc
+# AppsBackingStore
+# BackingStore
+# SaveUnders
+# ClickTime delay
+DecorateTransients
+Lenience
+# StartsOnDesk windowname desk-number
+# StaysOnTop windowname
+Sticky xload
+#XORvalue 1
+
+
+###=====================================================================
+### Paths
+
+# IconPath "/usr/X11R6/lib/X11/fvwm2/pixmaps"
+# ModulePath
+# PixmapPath "/usr/X11R6/lib/X11/fvwm2/pixmaps"
+
+
+###=====================================================================
+### Style settings
+
+Style "xmcd"		NoTitle, NoHandles, Sticky,WindowListSkip
+Style "xload"		NoTitle, NoHandles, Sticky,WindowListSkip
+Style "Volcntrl"	NoTitle, NoHandles, Sticky,WindowListSkip
+Style "XBiff"		NoTitle, NoHandles, Sticky,WindowListSkip
+Style "YaBiff"		NoTitle, NoHandles, Sticky,WindowListSkip
+Style "XClock"		NoTitle, NoHandles, Sticky,WindowListSkip
+Style "Timex"		NoTitle, NoHandles, Sticky,WindowListSkip
+Style "xterm-console"	NoTitle, NoHandles, Sticky,WindowListSkip,CirculateSkip
+Style "Fvwm Pager"	NoTitle, NoHandles, Sticky,WindowListSkip
+Style "Lxt"		NoTitle, NoHandles, Sticky,WindowListSkip
+Style "Grip"		NoTitle, NoHandles, Sticky
+Style "XMMS_Player"	NoTitle, NoHandles, Sticky
+Style "XMMS_Playlist"	NoTitle, NoHandles, Sticky,WindowListSkip
+Style "XMMS_Equalizer"	NoTitle, NoHandles, Sticky,WindowListSkip
+
+Style "FvwmIdent"		 NoHandles,        ,WindowListSkip
+
+# something like an X
+#ButtonStyle : 2 9 20x80@0 50x60@0 80x80@0 60x50@0 80x20@0 50x40@1 20x20@1 40x50@1 20x80@1
+
+# a lightning bolt taken from knuth's fvwmrc
+ButtonStyle : 2 7 65x10@0 25x50@1 45x50@0 35x80@1 75x40@0 55x40@1 65x10@0
+
+# Cursor  cursor_num cursor_type
+
+
+###=====================================================================
+### InitFunction and ResetFunction
+
+# Function "InitFunction"
+# 	Desk "I" 1 0
+# 	Exec "I" exec xterm -geometry +10+10
+# EndFunction
+
+
+###=====================================================================
+### Other functions
+
+## XXX The "Motion" part is bogus, it just waits ClickTime instead of
+## waiting for motion
+## look in functions.c:ComplexFunction
+##	* only uses first char of 2nd part
+Function "move-or-raiselower"
+	Move		"M"
+	RaiseLower	"Click"
+EndFunction
+
+Function "resize-or-raiselower"
+	Resize		"Motion"
+	RaiseLower	"Click"
+EndFunction
+
+
+###=====================================================================
+### Menus
+
+###---------------------------------------------------------------------
+### Some window options, quitting
+
+Popup "quit"
+	Title	"Quit"
+	Quit	"Quit fvwm"
+	Exec	"Quit X"	kill $QUITPID
+EndPopup
+
+Popup "fvwm"
+	Title	"Fvwm"
+	Nop	""
+	WindowList "Windows" 2 1
+	Nop	""
+	Move	"Move"
+	Resize	"Resize"
+	Close	"Close"
+	Destroy	"Destroy"
+	Stick	"Stick"
+	Nop	""
+	Restart	"Restart fvwm"	fvwm
+	Restart	"Start twm"	twm
+	Nop	""
+	Popup	"Quit"		quit
+	Nop	""
+	Module	"other Pager"	FvwmPager 0 0
+EndPopup
+
+###---------------------------------------------------------------------
+### Various commands
+
+Popup "commands"
+	Title	"Commands"
+	Nop	""
+	Exec	"Load Resources" xrdb -load $HOME/.Xresources
+	Exec	"Merge Resources" xrdb -merge $HOME/.Xresources
+	Nop	""
+	Exec	"XEmacs"	xemacs &
+	Exec	"Emacs"		emacs &
+	Nop	""
+	Exec	"Gaim"		gaim &
+	Exec	"Ftp"		xterm +ut -e ncftp &
+	Exec	"Telnet"	xterm -e telnet &
+	Exec	"Archie"	xarchie &
+	Exec	"Gopher"	xgopher &
+	Nop	""
+	Exec	"Processes"	xterm -title Processes -name top -e top &
+	Exec	"Print Queue"	lpwatch &
+EndPopup
+
+###---------------------------------------------------------------------
+### Hosts menu
+
+Popup "hosts"
+	Title	"Hosts"
+	Nop	""
+	Exec	"Local"		xterm -name xterm-local -e sh -c '(warpto) >/dev/null 2>&1; $SHELL' &
+	Exec	"Utah"		rterm utah &
+EndPopup
+
+###---------------------------------------------------------------------
+### Little menu to popup on title bars
+
+Popup "win-menu"
+	Maximize "Tall" 0 80
+	Maximize "Wide" 80 0
+	Maximize "Full" 80 80
+	M odule	"Identify" FvwmIdent
+	Nop	""
+	Close	"close"
+EndPopup
+
+
+###=====================================================================
+### Key/mouse bindings
+
+## context:
+## 	   R	- root
+## 	   W	- window
+## 	   T	- window titlebar
+## 	   S	- side, top, or bottom bar
+## 	   F	- frame (corners)
+## 	   I	- icon window
+## 	   0-9	- one of the titlebar buttons (1 3 5 7 9    0 8 6 4 2)
+## mod:
+## 	   N	- none
+## 	   C	- control
+## 	   S	- shift
+## 	   M	- meta
+## 	   A	- any
+
+##	keynam	cntxt	mod	fun
+# bindings for window manips
+Key	F1	WTSFI	N	Iconify
+Key	F2	WTSF	N	RaiseLower
+
+# bindings for moving around
+#Key	F1	A	S	GotoPage 0 0 # xxx
+#Key	F2	A	S	GotoPage 1 0 # xxx
+#Key	F3	A	S	GotoPage 0 1 # xxx
+#Key	F4	A	S	GotoPage 1 1 # xxx
+Key	F1	A	S	Desk 0 0
+Key	F2	A	S	Desk 0 1
+Key	F3	A	S	Desk 0 2
+Key	F4	A	S	Desk 0 3
+Key	F4	A	M	Close
+#
+Key	F5	A	N	Warp "foo" Emacs
+Key	F5	A	S	Desk 0 4
+Key	F6	A	N	WindowList "Windows" 2 1
+Key	Tab	A	M	WindowList "Windows" 2 1
+Key	F6	A	S	Desk 0 5
+Key	F7	A	N	Warp "foo" XTerm
+Key	F7	A	S	Desk 0 6
+Key	F8	A	N	Warp "foo" xterm-local
+Key	F8	A	S	Desk 0 7
+Key	F8	A	M	Exec "foo" xterm -name xterm-local -e sh -c '(warpto) >/dev/null 2>&1; $SHELL' &
+Key	F9	A	N	Warp "foo" Firefox-bin
+#
+Key	F10	A	N	Scroll 100000 0
+Key	F10	A	S	Scroll -100000 0
+Key	KP_F2	A	N	Scroll 100000 0
+Key	KP_F2	A	S	Scroll -100000 0
+
+# action bindings
+Key	F1	A	M	Exec "foo" sh -c 'xscreensaver-command -lock'
+#Key	F1	A	M	Exec "foo" sh -c 'lockit || xlock -mode blank'
+Key	F10	A	M	Restart "fvwm" fvwm
+# Hacks for controlling the cd player
+# Key	KP_Add	A	N	Exec "foo" sh -c '$HOME/bin/cd/next'
+# Key	KP_Subtract A	N	Exec "foo" sh -c '$HOME/bin/cd/prev'
+# Key	KP_Enter A	N	Exec "foo" sh -c '$HOME/bin/cd/play-pause-resume'
+# Key	KP_Delete A	N	Exec "foo" sh -c 'cdcontrol stop'
+# Key	KP_Insert A	N	Exec "foo" sh -c 'cdcontrol eject&'
+# Key	KP_Insert A	C	Exec "foo" sh -c 'cdcontrol close&'
+
+##	button	cntxt	mod	fun
+Mouse	1	TI	A	Function "move-or-raiselower"
+Mouse	1	W	M	Function "move-or-raiselower"
+Mouse	1	R	A	Popup "fvwm"
+
+Mouse	2	TI	A	Iconify
+Mouse	2	W	M	Iconify #XXX
+Mouse	2	R	A	Popup "commands"
+Mouse	2	R	M	Refresh
+
+Mouse	3	TI	A	Popup "win-menu"
+Mouse	3	W	M	Popup "win-menu"
+Mouse	3	R	A	Popup "hosts"
+
+Mouse	0	SF	A	Function "resize-or-raiselower"
+
+# rightmost title button
+Mouse	0	2	N	Close
+Mouse	0	2	M	Destroy
+
+
+###=====================================================================
+### Module options

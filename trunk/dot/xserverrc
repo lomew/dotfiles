@@ -1,0 +1,67 @@
+#!/bin/bash
+
+server=X
+dnum=0
+serverauth=$HOME/priv/.servercookies
+
+## This can happen since I have an AFS account.
+[ ! -w $HOME ] && {
+	exec $server :$dnum ${1+"$@"}
+}
+
+case `uname -sm` in
+FreeBSD*i386)
+	##
+	## On FreeBSD the server runs as root, so we have to put the
+	## server cookie in a place root can read it.
+	##
+	serverauth=/tmp/Xserver.cookie.`whoami`
+	rm -f $serverauth
+	if [ -f $serverauth ]; then
+		echo "cannot use $serverauth"
+		exit 1
+	fi
+
+	if [ -f /usr/X11R6/bin/Xwrapper ]; then
+		server=Xwrapper
+	fi
+	;;
+4.3bsd*9000/3*)
+	if [ -f /usr/bin/X11R5/X ]; then
+		server=/usr/bin/X11R5/X
+	fi
+	;;
+4.3bsd*9000/[78]*)
+	if [ $GRAPHON ]; then
+		server=Xgo
+		dnum=1			# kludge
+		if [ $DISPLAY ]; then
+			dnum=`echo $DISPLAY | sed 's/.*://'`
+		fi
+	fi
+	;;
+esac
+
+display=`hostname`:$dnum
+cookie=`perl -e 'srand(time() + ($$ << 16));
+		$big = 2**16-1;		# bsd allows 2^32 but sysv 2^16
+		$#a = 15;
+		unshift(@a, rand($big) & 0xff) while ($i++ < 16);
+		printf("%02x" x 16 . "\n", @a);'`
+
+rm -f $serverauth
+xauth -qf $serverauth <<END || exit 1
+remove $display
+add $display . $cookie
+END
+
+xauth -q <<END
+remove :$dnum
+remove $display
+remove localhost:$dnum
+add :$dnum . $cookie
+add $display . $cookie
+add localhost:$dnum . $cookie
+END
+
+exec $server :$dnum -auth $serverauth ${1+"$@"}
