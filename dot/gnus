@@ -1,0 +1,129 @@
+;;; Startup file for Gnus (v5 and up)			-*- emacs-lisp -*-
+
+;; This needs a once-over for gnus5.2
+;; note gnus-load-hook is run before this
+
+;; This is for gnus5 (gnus-msg.el)
+(setq gnus-mail-courtesy-message "\
+[The following message is a courtesy copy of an article
+ that has been posted as well.]\n\n")
+
+(defun my-gnus-plain-save-name (newsgroup headers &optional last-file)
+  "Generate file name from NEWSGROUP, HEADERS, and optional LAST-FILE.
+If variable `gnus-use-long-file-name' is non-nil, it is
+~/News/news.group/news.  Otherwise, it is like ~/News/news/group/news."
+  (or last-file
+      (expand-file-name
+       (if (gnus-use-long-file-name 'not-save)
+	   (concat newsgroup "/news")
+	 (concat (gnus-newsgroup-directory-form newsgroup) "/news"))
+       (or gnus-article-save-directory "~/News"))))
+
+(add-hook* 'gnus-group-mode-hook
+  (set (make-local-variable 'version-control) nil))
+
+;; hack, gnus5 has something similar builtin
+;;(if (featurep 'highlight-headers)
+;;    (add-hook 'gnus-select-article-hook
+;;		(function
+;;		 (lambda ()
+;;		   (save-excursion
+;;		     (set-buffer gnus-article-buffer)
+;;		     (save-excursion
+;;		       (save-restriction
+;;			 (widen)
+;;			 (highlight-headers (point-min) (point-max)
+;;					    t))))))))
+
+;(add-hook 'gnus-summary-mode-hook 'mc-install-read-mode)	;mailcrypt
+;(add-hook 'news-reply-mode-hook 'mc-install-write-mode)		;mailcrypt
+
+(define-key gnus-summary-mode-map "\C-d" 'gnus-summary-mark-as-read-backward)
+(define-key gnus-summary-mode-map "*" 'gnus-summary-enter-digest-group)
+(define-key gnus-summary-mode-map "k" 'gnus-summary-kill-same-subject)
+(setq
+ gnus-author-copy		"~/News/.posts"
+ gnus-auto-extend-newsgroup	t
+ gnus-auto-mail-to-author	t
+ gnus-auto-select-first	nil
+ gnus-check-new-newsgroups	'ask-server
+ gnus-default-article-saver	'gnus-summary-save-in-mail
+ gnus-group-line-format	"%M%S%p%5y: %(%g%)%O\n"
+ gnus-inhibit-startup-message	t
+ gnus-interactive-post		nil
+ gnus-large-newsgroup		100
+ gnus-local-organization	"Not specified"
+ gnus-mail-forward-method	'gnus-mail-forward-using-vm
+ gnus-mail-other-window-method	'gnus-mail-other-window-using-vm
+ gnus-mail-reply-method	'gnus-mail-reply-using-vm
+ gnus-novice-user		nil
+ gnus-permanently-visible-groups	"^uu\."
+ gnus-save-killed-list	nil
+ gnus-subscribe-hierarchical-interactive	t
+ gnus-subscribe-newsgroup-method	'gnus-subscribe-interactively
+ gnus-use-generic-from	t		;me@domain, not me@host.domain
+ gnus-use-long-file-name	t
+ gnus-mail-save-name		'my-gnus-plain-save-name
+ )
+
+;; This is so outgoing news goes to a file but outgoing mail is bcc'd to me.
+(setq gnus-message-archive-group	nil
+      message-default-news-headers	"Fcc: ~/News/.posts\n"
+      message-default-mail-headers	(concat "Bcc: " my-mail-address "\n"))
+
+;; This is so my Sender: and From: lines have a bogus mail address.
+;; The signature has the real one.  This hackery is to prevent
+;; address-collecting spam-robots from grabbing my address and sending
+;; me crap.
+(make-variable-buffer-local 'gnus-want-from-line-munging)
+(add-hook* 'message-signature-setup-hook
+  (setq gnus-want-from-line-munging
+	   (or (and (boundp 'gnus-want-from-line-munging)
+		    gnus-want-from-line-munging)
+	       (and (message-news-p)
+		    (save-excursion
+		      ;; Don't munge posts to local groups.
+		      (message-goto-newsgroups)
+		      (beginning-of-line)
+		      (not (looking-at ".*\\b\\(uu\\|utah\\)\\.")))
+		    (setq gnus-want-from-line-munging t)))))
+(setq message-signature
+  (lambda ()
+    (concat my-full-name
+	    (if gnus-want-from-line-munging
+		"\n(Remove `abcd-' from my address to reply.)"))))
+;; XXX I don't know if overwriting these is an intended customizaton feature
+(defun message-make-from ()
+  (if gnus-want-from-line-munging
+      (replace-in-string my-from-line "@" "@abcd-" t)
+    my-from-line))
+(defun message-make-sender ()
+  (if gnus-want-from-line-munging
+      (message-make-from)
+    (concat (user-login-name) "@" (system-name))))
+
+;; this is used by gnus5 as well as GNUS
+;; want to setq not do add-hook since we override
+(setq news-reply-header-hook
+  (lambda ()
+    ;; Tries to insert a "Foo Bar <foo@bar.net> wrote:" type of
+    ;; citation header, otherwise will be "foo@bar.net wrote:"
+    (let* ((foo (mail-extract-address-components news-reply-yank-from))
+	   (full (car foo))
+	   (mail (car (cdr foo))))
+      (if full
+	  (insert full " <"))
+      (insert mail)
+      (if full
+	  (insert ">"))
+      (insert " wrote:\n"))))
+
+(add-hook* 'news-reply-mode-hook
+  (run-hooks 'mail-mode-hook))
+
+;;; mail config
+(add-to-list 'gnus-secondary-select-methods '(nnml ""))
+(eval-after-load "mail-source"
+  '(add-to-list 'mail-sources '(file :path "/path/to/spool/file")))
+
+;;; .gnus ends here 

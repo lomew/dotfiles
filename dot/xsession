@@ -1,0 +1,129 @@
+#!/bin/sh
+###
+### X startup script.  MAKE SURE IT IS EXECUTABLE!
+###
+
+## Make sure we are running under sh and then redirect ourselves to .X11errors
+export HOME || exec /bin/sh $0
+cd
+exec >.X11errors 2>&1
+
+[ -h .Xauthority ] || {
+	rm -f priv/.Xauthority \
+	&& mv .Xauthority priv \
+	&& ln -s priv/.Xauthority .
+}
+
+##
+## Grab the env from .cshrc and set QUITPID.  QUITPID is meant to be
+## used by the window manager to kill the X session.
+##
+eval `/bin/csh -c printenv | sed 's/^\([^=]*\)=\(.*\)/\1="\2"; export \1;/'`
+QUITPID=$$; export QUITPID
+## Figure out if the X display can do color.
+[ x"`xrdb -symbols | grep DCOLOR`" = x ] || XCOLOR=1
+
+xrdb .Xresources			# load resources
+xset -c m 2/1 10 s 3600			# no click; speedup mouse; blank in 1hr
+(xsetroot -cursor_name gobbler \
+    || /usr/bin/X11/xsetroot -cursor_name gobbler) 2>/dev/null
+
+## Those shitty Speedo and Type1 fonts make my Emacs ugly, get em outta here
+xset fp- `xset q | awk -F, '/Speedo|Type1/ {
+				for (i=1; i<=NF; i++)
+					if ($i ~ /Speedo|Type1/)
+						printf $i","
+			    }'` 2>/dev/null
+
+## Background
+if [ $XCOLOR ]; then
+	if [ -x lib/images/Current ]; then
+		. lib/images/Current
+	else
+		xsetroot -solid brown 
+	fi
+fi
+
+##
+## Frob bells and keyboards.  I know, using uname to figure out the kbd
+## is arguably bogus.
+##
+xmodmap .swapkeys.xmm		# always make capslock and ctrl be ctrl
+host=`hostname`
+case `uname` in
+FreeBSD)
+	xset r rate 0 dpms 10800 0 0
+	#xmodmap -e 'pointer = 3 2 1'		# lefty mouse
+	xmodmap -e 'keycode 22 = BackSpace'	# kludge around XF86 nonsense
+	xmodmap .altmeta.xmm
+	;;
+Linux)
+	xset dpms 10800 0 0
+	xset r rate 250 30
+	xmodmap .altmeta.xmm
+	;;
+4.3bsd)
+	xmodmap -e 'remove mod1 = Mode_switch'
+	xmodmap -e 'keysym Select = End'
+	xmodmap -e 'keysym KP_Enter = Return'
+	[ $GRAPHON ] && xmodmap .altmeta.xmm
+	## Kludge, I don't know how to do this the Right way.
+	if [ $host = "schirf.cs.utah.edu" -o $host = "shafer.cs.utah.edu" ]; then
+		xmodmap -e 'keycode 110 = Insert'
+		xmodmap -e 'keycode 111 = Delete'
+		## My use-a-pc-to-proxy-my-keyboard hack.
+		csl/keyserver/keyserver 5000 &
+	fi
+	;;
+ULTRIX|OSF1|AIX)
+	xset b 10 70 50
+	xmodmap .altmeta.xmm
+	;;
+IRIX)
+	xset b 50 700 100
+	xset fp- /usr/lib/X11/fonts/75dpi/ +fp /usr/lib/X11/fonts/75dpi/
+	;;
+SunOS)
+	xset b 50 70 20
+	XFILESEARCHPATH=/usr/local/X11/lib/X11/%T/%N%S:/usr/openwin/lib/%T/%N%S:/usr/local/lib/X11/%T/%N%S
+	export XFILESEARCHPATH
+	;;
+HP-UX)
+	xset b 70 100 70
+	xmodmap -e 'remove mod1 = Mode_switch'
+	case "$host" in
+	labhp*)
+		xmodmap .altmeta.xmm
+		;;
+	esac
+	;;
+esac
+
+##
+## I don't run window manager last since sometimes I switch and sometimes
+## it crashes (but xload never crashes.)  The window manager can kill
+## $QUITPID (see above) to exit X.
+##
+if [ $GRAPHON ]; then
+	fvwm.go &
+else
+	fvwm &
+fi
+sleep 1				# race to set SubstructureRedirectMask...
+twm &				# will fail if fvwm wins
+
+if [ $GRAPHON ]; then
+	xterm -name xterm-local -geometry 80x60+0+80 &
+else
+	xterm -name xterm-local -geometry 80x30+0+80 &
+fi
+xterm -name xterm-console -e tail -F /var/log/messages &
+xtimex &
+lxt &
+volcntrl -geometry +286-73 -horizontal &
+yabiff.tcl &
+xclock &
+
+exec xload			# xload has pid $QUITPID, X dies when it does
+
+## EOF

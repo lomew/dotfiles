@@ -1,0 +1,552 @@
+! The resources of a widget are filled in from the following places
+!! (from highest priority to lowest priority):
+!!
+!!        1. Args passed at creation time.
+!!		- hard coded
+!!        2. Command line arguments.
+!!		- -xrm
+!!        3. User's per host defaults file
+!!		- ~/.Xdefaults-<host>
+!!		-or XENVIRONMENT
+!!        4. User's defaults file.
+!!		- ~/.Xdefaults
+!!		- or XENVIRONMENT
+!!        5. User's per application default file.
+!!		- XUSERFILESEARCHPATH (tries ~/name and ~/XAPPLRESDIR/name)
+!!		- if you set XUSERFILESEARCHPATH to something other
+!!		  than the default, XAPPLRESDIR is ignored
+!!        6. System wide per application default file.
+!!		- usually /usr/lib/X11/app-defaults/name
+!!		- XFILESEARCHPATH
+!!
+!!	The values of the environment variables XUSERFILESEARCHPATH and
+!!	XFILESEARCHPATH are a colon-separated list of pathnames.  The
+!!	pathnames contain replacement characters as follows (see
+!!	XtResolvePathname()):
+!!
+!!        %N      The value of the filename parameter, or the
+!!                application's class name.
+!!        %T      The value of the file "type".  In this case, the
+!!                literal string "app-defaults"
+!!        %C      customization resource (R5 only)
+!!        %S      Suffix.  None for app-defaults.
+!!        %L      Language, locale, and codeset (e.g. "ja_JP.EUC")
+!!        %l      Language part of %L  (e.g. "ja")
+!!        %t      The territory part of the display's language string
+!!        %c      The codeset part of the display's language string
+!!
+!!	Xt will load at most one app-default file from XFILESEARCHPATH
+!!	and another from XUSERFILESEARCHPATH
+
+!!! general =============================================================
+
+*BitmapIcon				: on
+*StringConversionWarnings       	: on
+*TtyModes				: intr ^c kill ^u quit ^\\ susp ^z
+*AllowSendEvents			: false
+
+!! shorthand for much-used fonts
+#define COURIER10M	-adobe-courier-medium-r-*-*-10-100-*-*-*-*-iso8859-*
+#define COURIER10B	-adobe-courier-bold-r-*-*-10-100-*-*-*-*-iso8859-*
+#define COURIER10I	-adobe-courier-medium-o-*-*-10-100-*-*-*-*-iso8859-*
+#define COURIER10BI	-adobe-courier-bold-o-*-*-10-100-*-*-*-*-iso8859-*
+
+#define COURIER12M	-adobe-courier-medium-r-*-*-12-120-*-*-*-*-iso8859-*
+#define COURIER12B	-adobe-courier-bold-r-*-*-12-120-*-*-*-*-iso8859-*
+#define COURIER12I	-adobe-courier-medium-o-*-*-12-120-*-*-*-*-iso8859-*
+#define COURIER12BI	-adobe-courier-bold-o-*-*-12-120-*-*-*-*-iso8859-*
+
+#define COURIER14M	-adobe-courier-medium-r-*-*-14-140-*-*-*-*-iso8859-*
+#define COURIER14B	-adobe-courier-bold-r-*-*-14-140-*-*-*-*-iso8859-*
+#define COURIER14I	-adobe-courier-medium-o-*-*-14-140-*-*-*-*-iso8859-*
+#define COURIER14BI	-adobe-courier-bold-o-*-*-14-140-*-*-*-*-iso8859-*
+
+#define COURIER18M	-adobe-courier-medium-r-*-*-18-180-*-*-*-*-iso8859-*
+#define COURIER18B	-adobe-courier-bold-r-*-*-18-180-*-*-*-*-iso8859-*
+#define COURIER18I	-adobe-courier-medium-o-*-*-18-180-*-*-*-*-iso8859-*
+#define COURIER18BI	-adobe-courier-bold-o-*-*-18-180-*-*-*-*-iso8859-*
+
+#define HELVETICA10M	-*-helvetica-medium-r-*-*-10-100-*-*-*-*-iso8859-*
+#define HELVETICA12M	-*-helvetica-medium-r-*-*-12-120-*-*-*-*-iso8859-*
+#define HELVETICA14M	-*-helvetica-medium-r-*-*-14-140-*-*-*-*-iso8859-*
+#define HELVETICA18M	-adobe-helvetica-medium-r-*-*-18-180-*-*-*-*-iso8859-1
+#define HELVETICA10B	-*-helvetica-bold-r-*-*-10-100-*-*-*-*-iso8859-*
+#define HELVETICA12B	-*-helvetica-bold-r-*-*-12-120-*-*-*-*-iso8859-*
+#define HELVETICA14B	-*-helvetica-bold-r-*-*-14-140-*-*-*-*-iso8859-*
+#define HELVETICA18B	-adobe-helvetica-bold-r-*-*-18-180-*-*-*-*-iso8859-1
+
+#define LUXIM		*luxi mono-medium-r-normal*iso8859-15
+#define LUXIB		*luxi mono-bold-r-normal*iso8859-15
+#define LUXII		*luxi mono-medium-o-normal*iso8859-15
+#define LUXIIB		*luxi mono-bold-o-normal*iso8859-15
+
+#if WIDTH >= 1600
+# define EMACS_FONT_M	COURIER14M
+# define EMACS_FONT_B	COURIER14B
+# define EMACS_FONT_I	COURIER14I
+# define EMACS_FONT_BI	COURIER14BI
+# define EMACS_VFONT_M	HELVETICA14M
+# define EMACS_VFONT_B	HELVETICA14B
+# define EMACS_GEOMETRY	164x70+46+27
+# define XTERM_FONT	lucidasanstypewriter-12
+# define XTERM_FONT_B	lucidasanstypewriter-bold-12
+#elif WIDTH >= 1280
+# define EMACS_FONT_M	COURIER12M
+# define EMACS_FONT_B	COURIER12B
+# define EMACS_FONT_I	COURIER12I
+# define EMACS_FONT_BI	COURIER12BI
+# define EMACS_VFONT_M	HELVETICA12M
+# define EMACS_VFONT_B	HELVETICA12B
+! define EMACS_GEOMETRY	81x60-10+35
+# define EMACS_GEOMETRY	164x70+0+0
+# define XTERM_FONT	6x13
+# define XTERM_FONT_B	6x13bold
+#else
+# define EMACS_FONT_M	COURIER10M
+# define EMACS_FONT_B	COURIER10B
+# define EMACS_FONT_I	COURIER10I
+# define EMACS_FONT_BI	COURIER10BI
+# define EMACS_VFONT_M	HELVETICA10M
+# define EMACS_VFONT_B	HELVETICA10B
+! define EMACS_GEOMETRY	81x53-0+0
+# define EMACS_GEOMETRY	164x71+0+0
+# define XTERM_FONT	lucidasanstypewriter-10
+# define XTERM_FONT_B	lucidasanstypewriter-bold-10
+#endif
+
+!! Emacsish keybinding for motif
+#define MOTIF_TRANSLATIONS #override\n\
+	<Key>osfBackSpace:	delete-previous-character()\n\
+	<Key>osfDelete:		delete-previous-character()\n\
+	Ctrl<Key>h:		delete-previous-character()\n\
+	Ctrl<Key>d:		delete-next-character()\n\
+	Meta<Key>osfDelete:	delete-previous-word()\n\
+	Meta<Key>osfBackSpace:	delete-previous-word()\n\
+	Meta<Key>d:		delete-next-word()\n\
+	Ctrl<Key>k:		delete-to-end-of-line()\n\
+	Ctrl<Key>g:		process-cancel()\n\
+	Ctrl<Key>b:		backward-character()\n\
+	<Key>osfLeft:		backward-character()\n\
+	Meta<Key>b:		backward-word()\n\
+	Meta<Key>osfLeft:	backward-word()\n\
+	Ctrl<Key>f:		forward-character()\n\
+	<Key>osfRight:		forward-character()\n\
+	Meta<Key>f:		forward-word()\n\
+	Meta<Key>osfRight:	forward-word()\n\
+	Ctrl<Key>e:		end-of-line()\n\
+	Ctrl<Key>a:		beginning-of-line()\n\
+	Ctrl<Key>w:		cut-clipboard()\n\
+	Meta<Key>w:		copy-clipboard()\n\
+	<Btn2Up>:		copy-primary()\n
+
+!! make motif textfields more like Emacs
+*XmTextField.translations:	MOTIF_TRANSLATIONS
+*XmText.translations:		MOTIF_TRANSLATIONS
+!! stop that annoying blinking!!!!
+! *XmTextField.BlinkRate:		0
+! *XmText.BlinkRate:		0
+
+!!! Motif ===============================================================
+
+Mwm*keyboardFocusPolicy			: pointer
+
+!!! Emacs ===============================================================
+
+#ifdef COLOR
+# define EMACS_BG	beige
+# define EMACS_FG	black
+# define EMACS_MENU_FG	gray90
+# define EMACS_MENU_BG	gray30
+Emacs*cursorColor			: red3
+Emacs*pointerColor			: red3
+#else
+# define EMACS_BG	white
+# define EMACS_FG	black
+# define EMACS_MENU_FG	white
+# define EMACS_MENU_BG	black
+#endif /* COLOR */
+Emacs*Foreground			: EMACS_FG
+Emacs*Background			: EMACS_BG
+Emacs*menubar*Foreground		: EMACS_MENU_FG
+Emacs*menubar*Background		: EMACS_MENU_BG
+Emacs*popup*Foreground			: EMACS_MENU_FG
+Emacs*popup*Background			: EMACS_MENU_BG
+Emacs*XlwScrollBar*Foreground		: EMACS_MENU_FG
+Emacs*XlwScrollBar*Background		: EMACS_MENU_BG
+! this one makes xemacs crash
+!Emacs*backgroundToolBarColor		: EMACS_MENU_BG
+Emacs*EmacsFrame.modeline.attributeForeground		: EMACS_MENU_FG
+Emacs*EmacsFrame.modeline.attributeBackground		: EMACS_MENU_BG
+Emacs*EmacsFrame.modeline-buffer-id.attributeForeground	: lightblue
+Emacs*EmacsFrame.modeline-mousable.attributeForeground	: orange2
+Emacs*EmacsFrame.modeline-mousable-minor-mode.attributeForeground: orange2
+Emacs*EmacsFrame.isearch.attributeBackground		: yellow
+Emacs*EmacsFrame.isearch-secondary.attributeBackground	: gray80
+Emacs*EmacsFrame.isearch-secondary.attributeForeground	: EMACS_FG
+Emacs*EmacsFrame.paren-match.attributeBackground	: steelblue3
+Emacs*EmacsFrame.zmacs-region.attributeBackground	: green2
+Emacs*EmacsFrame.gui-element.attributeBackground	: red3
+
+!! Turn off tool bar
+Emacs*toolBar				: 0
+Emacs.topToolBarHeight			: 0
+!! Turn off horiz scrolls
+Emacs.scrollBarHeight			: 0
+!! Turn off vert scrolls
+Emacs*ScrollBars			: off
+Emacs.scrollBarWidth			: 0
+Emacs*menuBar				: 0
+Emacs.menuBarHeight			: 0
+Emacs*XlwScrollBar.KnobStyle		: dimple
+Emacs*XlwScrollBar.ArrowPosition	: same
+
+!!
+!! Various fonts, the modeline one is ignored by normal emacs.  The
+!! menu ones are the default in xemacs.
+!! Some of these are explicit because emacs guesses wrong for italic.
+!! It chooses the ugly -i- italic ones instead of the -o- oblique ones.
+!!
+!Emacs.Font				: EMACS_FONT_M
+!Emacs*EmacsFrame.default.attributeFont	: EMACS_FONT_M
+!Emacs*EmacsFrame.italic.attributeFont	: EMACS_FONT_I
+!Emacs*EmacsFrame.bold-italic.attributeFont: EMACS_FONT_BI
+!Emacs*EmacsFrame.modeline.attributeFont	: EMACS_VFONT_M
+!Emacs*EmacsFrame.modeline-buffer-id.attributeFont: EMACS_VFONT_B
+!Emacs*EmacsFrame.menubar*Font		: EMACS_VFONT_B
+!Emacs*popup*Font			: EMACS_VFONT_B
+
+!! Font-lock colors (XEmacs and Emacs >= 19.29)
+#ifdef COLOR
+Emacs*EmacsFrame.font-lock-comment-face.attributeForeground	: firebrick
+Emacs*EmacsFrame.font-lock-string-face.attributeForeground	: green4
+! FIXME, fix font-lock to not do docstrings in non-lisp! (was black)
+Emacs*EmacsFrame.font-lock-doc-string-face.attributeForeground	: green4
+Emacs*EmacsFrame.font-lock-function-name-face.attributeForeground: blue
+Emacs*EmacsFrame.font-lock-keyword-face.attributeForeground	: royalblue
+Emacs*EmacsFrame.font-lock-preprocessor-face.attributeForeground: darkviolet
+#endif /* COLOR */
+!Emacs*EmacsFrame.font-lock-comment-face.attributeFont		: EMACS_FONT_I
+!Emacs*EmacsFrame.font-lock-string-face.attributeFont		: EMACS_FONT_M
+! FIXME, fix font-lock to not do docstrings in non-lisp! (was italic)
+!Emacs*EmacsFrame.font-lock-doc-string-face.attributeFont	: EMACS_FONT_M
+!Emacs*EmacsFrame.font-lock-function-name-face.attributeFont	: EMACS_FONT_BI
+!Emacs*EmacsFrame.font-lock-keyword-face.attributeFont		: EMACS_FONT_B
+
+!! Mail headers (XEmacs)
+#ifdef COLOR
+Emacs*EmacsFrame.message-headers.attributeForeground		: firebrick
+Emacs*EmacsFrame.message-highlighted-header-contents.attributeForeground : purple
+Emacs*EmacsFrame.message-cited-text.attributeForeground		: green4
+Emacs*EmacsFrame.mail-header-separator.attributeBackground	: tan
+#endif /* COLOR */
+!Emacs*EmacsFrame.message-headers.attributeFont			: EMACS_FONT_B
+!Emacs*EmacsFrame.message-highlighted-header-contents.attributeFont : EMACS_FONT_BI
+!Emacs*EmacsFrame.message-cited-text.attributeFont		: EMACS_FONT_I
+!Emacs*EmacsFrame.mail-header-separator.attributeFont		: EMACS_FONT_B
+
+!! VM (XEmacs)
+#ifdef COLOR
+Emacs*EmacsFrame.vm-summary-highlight-face.attributeBackground	: lightskyblue3
+#endif /* COLOR */
+
+!! Random XEmacs stuff
+#ifdef COLOR
+Emacs*EmacsFrame.x-face.attributeBackground		: EMACS_BG
+#endif /* COLOR */
+!Emacs*EmacsFrame.documentation.attributeFont		: EMACS_FONT_I
+!Emacs*EmacsFrame.section-heading.attributeFont		: EMACS_FONT_B
+
+!! Always want emacs in same spot
+Emacs.Geometry				: EMACS_GEOMETRY
+
+!!! xterm ===============================================================
+
+#ifdef COLOR
+XTerm*background			: aquamarine4
+XTerm*foreground			: antiquewhite
+XTerm*cursorColor			: yellow2
+XTerm*pointerColor			: yellow2
+!! these are for color xterm (color0 should be black but I use color0
+!! for prompt color.)
+XTerm*color0				: yellow
+XTerm*color1				: red
+XTerm*color2				: green
+XTerm*color3				: yellow
+XTerm*color4				: blue
+XTerm*color5				: magenta
+XTerm*color6				: cyan
+XTerm*color7				: white
+! don't let bold override colors
+XTerm*boldColors			: off
+XTerm*VT100*colorBDMode			: off
+XTerm*VT100*colorULMode			: off
+XTerm*VT100*underLine			: on
+#else /* not COLOR */
+XTerm*background			: black
+XTerm*foreground			: white
+#endif /* COLOR */
+
+XTerm*reverseWrap			: true
+XTerm*scrollTtyOutput			: false
+XTerm*scrollKey				: true
+XTerm*VisualBell			: true
+XTerm*LoginShell			: false
+!! this determines if a utmp entry isn't written (for who/w/finger output)
+XTerm*utmpInhibit			: false
+!! This determines what xterm considers words for the doubleclick
+!! selection (besides [0-9A-Za-z]).
+!! 33=!,37=%,45=-,46=.,47=/,64=@,58=:,126=~
+XTerm*charClass				: 33:48,37:48,45-47:48,64:48,58:48,126:48
+!! this next one is VERY important
+XTerm*eightBitInput			: false
+XTerm*jumpScroll			: on
+XTerm*saveLines				: 1024
+XTerm*scrollBar				: on
+XTerm*VT100*Geometry			: 80x30
+! 7x13 6x13 lusantype clean
+XTerm*VT100*font			: XTERM_FONT
+XTerm*VT100*boldFont			: XTERM_FONT_B
+! this is for fancy color xterm
+XTerm*VT100*boldColors			: false
+
+!! This is cool.  Hit F4 to background something you didn't run with &.
+!! printscr tries to set the xterm title based on what is in the shell cmdline
+XTerm*VT100*translations: #override \
+	<Key>F4: string("bg\n")\n\
+	<Key>Print: string("echo ']0;'\n")
+
+!! XXX, for rxvt
+XTerm*mapalert: true
+XTerm*scrollbar: Fat
+
+!!! xterm-<color>s ======================================================
+!!! Note these aren't in an #ifdef COLOR block so be careful you don't get
+!!! black on black or white on white.
+
+xterm-briteblue*background		: steelblue
+xterm-briteblue*foreground		: lemonchiffon
+xterm-briteblue*color0			: yellow
+xterm-paleblue*background		: skyblue4
+xterm-paleblue*foreground		: lemonchiffon
+xterm-paleblue*color0			: yellow
+xterm-grayblue*background		: cadetblue4
+xterm-grayblue*foreground		: lemonchiffon
+xterm-grayblue*color0			: yellow
+xterm-green*background			: aquamarine4
+xterm-green*foreground			: lemonchiffon
+xterm-green*color0			: yellow
+! ! fix - need more contrast b/t prompt and text
+! xterm-gray*background			: gray70
+! xterm-gray*foreground			: navy
+! xterm-gray*color0			: steelblue
+! ! fix - too brite
+! xterm-magenta*background		: magenta4
+! xterm-magenta*foreground		: lemonchiffon
+! xterm-magenta*color0			: yellow
+! ! fix - need more contrast b/t prompt and text
+! xterm-purple*background			: mediumpurple4
+! xterm-purple*foreground			: yellow
+! xterm-purple*color0			: green
+
+!! palevioletred4
+!! paleturquoise4
+
+!!! xterm-local =========================================================
+
+#ifdef COLOR
+! was navy
+xterm-local*background			: steelblue4
+xterm-local*foreground			: white
+xterm-local*cursorColor			: green
+xterm-local*color0			: yellow
+#endif /* COLOR */
+
+xterm-local*utmpInhibit			: False
+xterm-local*iconName			: Local
+xterm-local*title			: Local
+
+!!! xterm-console =======================================================
+
+#ifdef COLOR
+xterm-console*background		: midnightblue
+#else
+xterm-console*background		: black
+xterm-console*foreground		: white
+#endif /* COLOR */
+
+xterm-console*font			: 6x10
+xterm-console*vt100*geometry		: 80x5+74-0
+xterm-console*saveLines			: 512
+xterm-console*utmpInhibit		: true
+
+!!! xterm-lib ===========================================================
+
+xterm-lib*iconName			: Library
+xterm-lib*saveLines			: 0
+xterm-lib*scrollBar			: off
+xterm-lib*title				: Library
+xterm-lib*vt100*geometry		: 80x24
+
+!!! xload ===============================================================
+
+#ifdef COLOR
+XLoad*Background                	: firebrick
+XLoad*Foreground                	: cyan
+XLoad*highlight                 	: yellow
+#else
+XLoad*Background			: Black
+XLoad*Foreground			: White
+#endif /* COLOR */
+
+Xload*highlight				: black
+XLoad*Geometry				: 65x54+0-0
+!XLoad*Geometry				: 65x55+90-0
+XLoad*font				: HELVETICA12M
+
+!!! xclock ==============================================================
+
+XClock*geometry		: +582-0
+!XClock*font		: -adobe-new century schoolbook-medium-r-*--*-240-100-100-*-*-*-*
+XClock*Font		: -adobe-new century schoolbook-medium-r-normal--34-240-100-100-p-181-iso8859-1
+XClock*analog		: false
+XClock*Foreground	: white
+XClock*Background	: black
+XClock*brief		: true
+
+!!! xman ================================================================
+
+#ifdef COLOR
+Xman*topBox*foreground         		: black
+Xman*topBox*background         		: cadetblue
+
+Xman*search*Foreground			: black
+Xman*search*Background			: lemonchiffon
+Xman*search*Text*background		: white
+
+Xman*ScrollByLine*Foreground		: black
+Xman*ScrollByLine*Background		: cadetblue
+
+Xman*Viewport*Foreground		: black
+Xman*Viewport*Background		: cadetblue3
+
+Xman*SimpleMenu*foreground		: black
+Xman*SimpleMenu*background		: gray
+
+Xman*likeToSave*Foreground		: black
+Xman*likeToSave*Background		: lemonchiffon
+Xman*likeToSave*Text*background		: white
+
+Xman*MenuButton*foreground		: black
+Xman*MenuButton*background		: gray
+
+Xman*Paned.manualBrowser*background	: lemonchiffon
+#endif /* COLOR */
+
+Xman*search*Command*font		: HELVETICA12M
+Xman*directoryFontNormal		: HELVETICA12M
+Xman*SimpleMenu*Font			: HELVETICA12B
+Xman*likeToSave*Command*font		: HELVETICA12M
+Xman*MenuButton*Font			: HELVETICA12B
+Xman*Label*Font				: HELVETICA12M
+Xman*Command*Font			: HELVETICA12B
+Xman*topBox*geometry			: 140x54+250-0
+Xman*bothShown				: true
+
+!!! xlock ===============================================================
+
+XLock.nolock				: false
+XLock.font				: *helvetica-bold-r*24*
+!XLock.font				: *new century schoolbook-bold-i*24*
+XLock.background			: purple4
+XLock.foreground			: yellow
+
+XLock*nice				: 100
+XLock.qix.saturation			: 0.5
+
+!!! xarchie =============================================================
+
+Xarchie*archieHost			: archie.rutgers.edu
+Xarchie*searchType			: substr
+Xarchie*sortType			: weight
+Xarchie*Font                            : 7x14
+Xarchie*Background                      : gray
+Xarchie*Foreground                      : black
+Xarchie*MenuButton*background           : lemonchiffon
+Xarchie*Command*background              : lemonchiffon
+Xarchie*List*background                 : lightsteelblue4
+Xarchie*List*foreground                 : bisque2
+
+!!! Mosaic ===============================================================
+
+Mosaic*homeDocument		: http://www.cs.utah.edu/~lomew/
+Mosaic*defaultHotlistFile	: .public_html/mosaic-hotlist
+Mosaic*globalHistoryFile	: www/mosaic-history
+Mosaic*personalAnnotationDirectory: www/mosaic-annotations
+
+!!! xdvi =================================================================
+XDvi.shrinkFactor		: 4
+XDvi.background			: gray85
+XDvi*Form*background		: gray70
+XDvi*Command*foreground		: lemonchiffon
+
+Ghostview*Background:		gray70
+
+xpostit.background: mediumforestgreen
+PostItNote*background: red
+
+Timex*startPaused: true
+Timex*geometry: +582-0
+Timex*timexDirectory: /home/css/ugrad/lomew/.timex
+Timex*background: azure3
+Timex*font: HELVETICA12B
+Timex*borderWidth: 0
+
+Netscape*installColormap:       true
+
+Notifier*fontList: -*-helvetica-*-r-*-*-17-*
+Notifier*message.fontList:     -*-new century schoolbook-*-r-*-*-17-*
+plan*menubar*fontList:  -*-helvetica-bold-*-normal-*-14-*
+plan*fontList:          -*-helvetica-*-r-normal-*-14-*
+plan*helpFont:          -*-helvetica-medium-r-normal-*-14-*
+plan*calNumberFont:     -*-helvetica-*-r-*-*-18-*
+plan*calNumberFontSm:   -*-helvetica-*-r-*-*-14-*
+plan*calNoteFont:       -*-helvetica-medium-r-*-*-10-*
+plan*yearTitleFont:     -*-helvetica-*-r-*-*-34-*
+plan*yearMonthFont:     -*-helvetica-*-o-*-*-17-*
+plan*yearWeekdayFont:   -*-helvetica-*-o-*-*-12-*
+plan*yearNumberFont:    -*-helvetica-*-r-*-*-12-*
+plan*weekTitleFont:     -*-helvetica-*-r-*-*-18-*
+plan*weekDayFont:       -*-helvetica-*-o-*-*-14-*
+plan*weekHourFont:      -*-helvetica-*-r-*-*-14-*
+plan*weekNoteFont:      -*-helvetica-*-r-*-*-14-*
+
+XDiary*useFileLock: false
+XDiary*alarm1Valid:   True
+XDiary*alarm1Offset:  -15
+
+Fig*StartGridMode: 1
+
+! doesn't work, see ~/.gv
+GV.antialias: True
+
+! Cache for me please.
+XMcd*cddbRemoteAutoSave:     True
+XMcd*cddbPath:       ~/lib/cddb;classical;rock;misc;data;jazz;folk;country;newage;reggae;blues;soundtrack;cddbp://cddb.cddb.com;http://ca.us.cddb.com/~cddb/cddb.cgi;http://us.cddb.com/~cddb/cddb.cgi
+! I wish I could tell xmcd to not grab Shift<Key>F1, I want my WM to have that
+
+gnuplot*line1Color: red
+gnuplot*line2Color: blue
+gnuplot*line3Color: green
+gnuplot*line4Color: magenta
+gnuplot*line5Color: cyan
+gnuplot*line6Color: sienna
+gnuplot*line7Color: orange
+gnuplot*line8Color: coral
+
+!! emacs Local Variables:
+!! emacs mode: text
+!! emacs comment-column: 0
+!! emacs comment-start: "!! "
+!! emacs comment-start-skip: "!+[ \t]*"
+!! emacs comment-end: ""
+!! emacs End:

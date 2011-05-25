@@ -1,0 +1,322 @@
+##
+## .login - read by csh/tcsh after .cshrc when a login shell.  Sets up
+## things that only need to be done once per login, like the PATH and
+## other env vars.
+##
+## You can set `XTerm*loginShell: true' in your .Xresources, or equivalent,
+## if desired.
+##
+## $Id: login,v 1.12 2002/03/19 03:45:19 lomew Exp $
+##
+
+echo "Running .login..."
+
+## Default mask for files we create.
+umask 002				# mask off the write bit for `other'
+
+## Be a hog.
+#unlimit	# some bug with tcsh on osx, descriptors
+
+## Basic generic path that should allow us to figure out what we're
+## running on so we can set the path more correctly later.
+set orig_path = ($path)
+set path_gen_front = (/usr/local/bin /usr/bin /usr/sbin)
+set path_gen_back = (/bin /sbin)
+set path = ($path_gen_front $path_gen_back)
+set path = ($path /usr/bsd)		# just in case, for IRIX
+
+##
+## Figure out what we're running on.
+##
+set ustuff = (`uname -srm`)
+setenv OSNAME $ustuff[1]
+setenv OSREL $ustuff[2]
+setenv MACHTYPE $ustuff[3]
+unset ustuff
+
+##
+## Figure out where we are.
+##
+setenv SITE nbttech
+setenv HOSTNAME `hostname`
+if ($HOSTNAME =~ '*.*') then
+	setenv HOSTALIAS `echo $HOSTNAME | sed 's/\..*//'`
+else if ($HOSTNAME == npdev || $HOSTNAME == lindev || $HOSTNAME == lundev || $HOSTNAME == tsdev || $HOSTNAME == blender) then
+	setenv HOSTALIAS $HOSTNAME
+	setenv HOSTNAME $HOSTNAME.inktomi.com
+else
+	setenv HOSTALIAS $HOSTNAME
+	if (-f /etc/resolv.conf) then
+		set domain = `awk '/^domain/ { print $2 }' /etc/resolv.conf`
+		if ($domain != "") then
+			setenv HOSTNAME $HOSTALIAS.$domain
+		else
+			setenv HOSTNAME $HOSTALIAS
+		endif
+		unset domain
+	endif
+endif
+if ($HOSTNAME =~ *cs.utah.edu) setenv SITE utah-cs
+if ($HOSTNAME =~ *math.utah.edu) setenv SITE utah-math
+if ($HOSTNAME =~ *ffnet.com) setenv SITE ffnet
+if ($HOSTNAME =~ *inktomi.com) setenv SITE inktomi
+
+##
+## Set SYS, path_os_* based on what OS we're running on.
+##
+setenv SYS unknown
+set path_os_front = ()
+set path_os_back = ()
+switch ("$OSNAME $OSREL $MACHTYPE")
+case "Darwin*x86_64":
+	setenv SYS x86-64_darwin
+	# hack to take what we came in here with
+	set path_gen_back = ()
+	set path_gen_front = ($orig_path)
+	breaksw
+
+case "FreeBSD 4*":
+	setenv SYS x86_fbsd4
+	set path_os_back = (/usr/X11R6/bin /usr/local/sbin)
+	breaksw
+
+case "FreeBSD 3*":
+	setenv SYS x86_fbsd3
+	set path_os_back = (/usr/X11R6/bin)
+	breaksw
+
+case "FreeBSD 2*":
+	setenv SYS x86_fbsd2
+	set path_os_back = (/usr/X11R6/bin)
+	breaksw
+
+case "Linux 2*86"
+	setenv SYS x86_linux2
+	set  path_os_back = (/usr/X11R6/bin /usr/local/sbin)
+	breaksw
+
+case "Linux 2*x86_64"
+	setenv SYS x86-64_linux2
+	set  path_os_back = (/usr/X11R6/bin /usr/local/sbin)
+	breaksw
+
+case 4.3bsd*9000/[78]*:
+        setenv SYS hp700_hpbsd
+	set path_os_front = (/usr/ucb)
+	## X won't work if these aren't near the front
+	set path_os_front = ($path_os_front /usr/local /usr/gnu/bin /usr/new /usr/new/X11)
+	set path_os_back = (/usr/etc /etc /usr/hacks)
+        breaksw
+
+case 4.3bsd*9000/[34]*:
+	setenv SYS hp300_hpbsd
+	set path_os_front = (/usr/ucb)
+	## X won't work if these aren't near the front
+	set x = /usr/src/new/X11R5/install/bin
+	if (! -e $x) set x = ""
+	set path_os_front = ($path_os_front /usr/local /usr/gnu/bin /usr/new $x /usr/new/X11)
+	set path_os_back = (/usr/etc /etc /usr/hacks)
+	unset x
+	breaksw
+
+case "HP-UX A.09*9000/[78]*":
+	setenv SYS hp700_hpux9
+	set path_os_back = (/usr/etc /etc)
+	breaksw
+
+case "HP-UX A.10*9000/[78]*":
+	## XXX not tested
+	setenv SYS hp700_hpux10
+	set path_os_back = (/usr/etc /etc)
+	breaksw
+
+case "SunOS 4*sun4*":
+	setenv SYS sun4_sunos4
+	set path_os_front = (/usr/ucb)
+	breaksw
+
+case "SunOS 5*sun4*":
+	setenv SYS sun4_sunos5
+	set path_os_front = (/opt/SUNWspro/bin /usr/ucb)
+	set path_os_back = (/usr/ccs/bin /usr/openwin/bin /usr/5bin /usr/etc /etc)
+	breaksw
+
+case "IRIX 6*":
+	setenv SYS sgi_irix6
+	set path_os_front = (/usr/bsd)
+	set path_os_back = (/usr/bin/X11 /usr/etc /etc)
+	breaksw
+
+case AIX*:
+	setenv SYS rs6k_aix
+	breaksw
+
+case ULTRIX*:
+	setenv SYS mips_ultrix
+	breaksw
+
+endsw
+
+##
+## Set path_site_* and other things depending on which site we're at.
+##
+set path_site_front = ()
+set path_site_back = ()
+switch ($SITE)
+case inktomi:
+	# The Sun compilers fail if this is moe than 1k
+	limit descriptors 1024
+	setenv LM_LICENSE_FILE 1726@j3:1726@inkdev:1726@tsdev
+	set path_site_front = (/usr/releng/bin /usr/local/sbin)
+	set path_site_back = (/usr/sww/bin)
+	breaksw
+
+case ffnet:
+	setenv PRINTER grant
+	set path_site_front = (/usr/local/sbin)
+	breaksw
+
+case utah-cs:
+	## HPBSD machines aren't like "normal" utah-cs machines and
+	## need /usr/local/bin before /usr/local/gnu/bin.
+	set x = ""
+	if ($SYS =~ *hpbsd) set x = /usr/local/bin
+	set path_site_front = (			\
+		$x				\
+		/usr/local/gnu/bin		\
+		/usr/site/bin			\
+		/usr/local/sbin			\
+		)
+	## /usr/afsws/bin must succeed /usr/local/gnu/bin for proper RCS tools.
+	set path_site_back = (			\
+		/usr/flux/bin			\
+		/usr/local/apps/bin		\
+		/usr/local/contrib/bin		\
+		/usr/local/share/contrib/bin	\
+		/usr/afsws/bin			\
+		/usr/afsws/etc			\
+		)
+	setenv PRINTER cc-duplex
+	breaksw
+
+case utah-math:
+	set path_site_back = (/usr/local/etc)
+	breaksw
+
+endsw
+
+##
+## Finally, set the path for real (propagates to $PATH).
+##
+set path = (~/bin/$SYS ~/bin \
+		$path_site_front $path_os_front $path_gen_front \
+		$path_site_back  $path_os_back  $path_gen_back)
+unset path_gen_front path_gen_back
+unset path_site_front path_site_back
+unset path_os_front path_os_back
+
+##
+## Setup the `man' system.
+##
+if (-x ~/bin/guessmanpath) then
+	setenv MANPATH `guessmanpath`
+else
+	setenv MANPATH /usr/man:/usr/lang/man:/usr/local/man:/usr/local/apps/man:/usr/local/gnu/man:/usr/local/share/contrib/man:/usr/afsws/man
+endif
+if ($OSNAME =~ *irix*) setenv MANPATH /usr/share/catman:/usr/catman:$MANPATH
+setenv MANPATH /usr/share/man:$MANPATH
+setenv ADDMANPATH /usr/share/man	# used by perl man impl
+
+##
+## Set various env vars.
+##
+if (-e ~/lib/terminfo) setenv TERMINFO ~/lib/terminfo
+setenv CVS_RSH ssh
+setenv SFROOT /repository
+setenv FCROOT /net/releng/export/releng/CVS_REPOSITORY
+setenv P4PORT church:1666
+setenv P4CONFIG p4config
+setenv SVN svn://svn
+setenv BLOCKSIZE 1k		# for du/df on bsd
+setenv TEXINPUTS .::$HOME/lib/tex/styles
+setenv NNTPSERVER news
+setenv EDITOR vi
+setenv VISUAL vi
+setenv PAGER less
+setenv MANPAGER 'less -s'
+unsetenv LESSOPEN	# no thanks
+setenv LESS '-imnfz-3'
+setenv RCSINIT '-zLT'
+setenv PERLLIB $HOME/lib/perl/${SYS}:$HOME/lib/perl
+setenv TMPDIR /tmp
+# setenv CFLAGS '-pipe'
+setenv CALOPT '-nodata -nocolor'	# for the cal program
+unsetenv LANG				# for linux man page badness
+if (-f ~/priv/inbox) setenv MAIL ~/priv/inbox
+if (-f ~/.hostaliases) setenv HOSTALIASES ~/.hostaliases
+setenv GREP_OPTIONS '--exclude=*.svn-base'
+
+## XXX this can go away when I have a Grand Unified Home Directory.
+if (! $?REMOTEHOST) setenv REMOTEHOST local
+if ($REMOTEHOST == cornish.cs.utah.edu) setenv XAUTHORITY /home/lomew/.Xauthority
+
+if (-e ~/.pagklog) source ~/.pagklog
+
+##
+## Manually cat the motd.
+##
+sh -c '[ -r .hushlogin ] && cat /etc/motd 2>/dev/null'
+if ($SITE == utah-math && -e /usr/skel/SYS.motd) cat /usr/skel/SYS.motd
+
+setenv LOGGEDIN
+if (-e ~/.cshrc) source ~/.cshrc
+
+if ($tty =~ *console || $tty =~ *ttyv[0-9] || $tty =~ *hft* || $tty =~ *tty1) then
+	##
+	## I would just alias X to the right command instead of fiddle
+	## with the Xstarter crap, but you can't exec an
+	## alias.  Wonderful csh.
+	##
+	switch ($SYS)
+	case *fbsd*:
+		set Xstarter = 'xinit'
+		#not needed anymore since "xset r rate 0" seems to work
+		#kbdcontrol -r fast
+		breaksw
+	case *aix*:
+		set Xstarter = 'open xinit'
+		breaksw
+	case *hpbsd*:
+		set Xstarter = xinit
+		breaksw
+	case *sunos4*:
+		set Xstarter = '/usr/local/X11/bin/xinit'
+		breaksw
+	case *sunos5*:
+		set Xstarter = 'openwin'	# gag, puke
+		breaksw
+	default:
+		set Xstarter = 'xinit'
+		breaksw
+	endsw
+	
+	foreach p (/usr/local/bin /usr/bin)
+		if (-f $p/ssh-agent) then
+			set Xstarter = "$p/ssh-agent $Xstarter"
+		endif
+	end
+	unset p
+
+	if ($HOSTNAME =~ pizarro*) set Xstarter = "$Xstarter -- -bpp 16"
+
+	alias X $Xstarter
+
+	echo -n "Start X? [yes]? "
+	switch ($<)
+	case "[Yy]*":
+	case "":
+		echo "  starting X..."
+		exec $Xstarter
+		breaksw
+	endsw
+endif

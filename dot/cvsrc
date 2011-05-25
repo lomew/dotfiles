@@ -1,0 +1,5 @@
+diff -u3p
+update -dP
+log -N
+checkout -P
+rlog -N

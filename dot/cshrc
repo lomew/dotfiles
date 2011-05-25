@@ -1,0 +1,152 @@
+##
+## .cshrc - read by csh/tcsh upon startup before .login.  Does stuff
+## needed for interactive shells, like setting shell variables and aliases.
+##
+## It makes more sense for .login to be run before .cshrc since it is
+## is supposed to setup the basic env and path---which .cshrc may well
+## depend on.
+## However, it isn't normally like that so we have a little hack here
+## to prevent this file from doing anything unless the LOGGEDIN env var
+## has been set by .login.
+## The .login file then sources this file after setting that var.
+## Also, this file doesn't do anything unless $prompt is set,
+## which means we are an interactive shell.
+##
+## $Id: cshrc,v 1.17 2002/03/19 03:43:45 lomew Exp $
+##
+
+setenv HOSTALIASES ~/.hostaliases
+
+# hack since my dotfiles are fucked up
+# I think this is for "ssh host cmd" kind of stuff
+#if (! $?LOGGEDIN) set path = (/usr/releng/bin $path)
+if (! $?LOGGEDIN) set path = (~/bin $path)
+
+## Fedora /etc/csh.cshrc fucks with MAIL var
+if (-f ~/priv/inbox) setenv MAIL ~/priv/inbox
+
+
+if ($?LOGGEDIN && $?prompt) then
+
+echo "Running .cshrc..."
+
+##
+## Various terminal goo.
+## We do it here instead of .login since we want it for each xterm.
+##
+
+##
+## Special hack for setting the display.
+## Since rlogin passes TERM to the remote process, ~/bin/rterm encodes
+## DISPLAY and TERM in TERM and we decode it here.
+##
+if ($TERM =~ xyzzy*) then
+	eval `echo $TERM | awk -F, '{print "setenv TERM ", $3, "; setenv XDISPLAY " $2}'`
+	# Don't set it if ssh already did, but save it
+	if ($?DISPLAY) then
+		setenv SSH_DISPLAY $DISPLAY
+	else
+		setenv DISPLAY $XDISPLAY
+		echo "*** DISPLAY set to $DISPLAY"
+	endif
+endif
+
+##
+## tset stuff to determine terminal type and initialize it.
+## HP-UX and IRIX tset don't look at $TERM for the -m option, they
+## look only in /etc/ttytype or whatever.  Hence the -m unknown hack.
+##
+if ($TERM != emacs) then
+	set noglob
+#	eval `tset -m "unknown:$TERM" -m "dialup:?t10" -m "network:?" -s -Q`
+	set term = $TERM
+	## Who's stupid idea was vs100 anyway?  It is an xterm, dammit.
+	if ($term == vs100) set term = xterm
+	## This confuses expect.
+	#if ($term == xterm) eval "`resize -c`"
+	unset noglob
+endif
+
+##
+## stty stuff
+## Erase differs from kbd to kbd, but ^H is always easier to type
+## than ^?.
+##
+stty erase '^h' kill '^u' intr '^c' quit '^\' susp '^z' -tabs
+if ($OSNAME == 4.3bsd) stty -extproc
+if ($term == t10) stty erase '^?'
+
+## Special termcap hack to save screen (ti/te seqs).
+if ($term == xterm && $?TERMCAP) then
+	setenv TERMCAP "${TERMCAP}"':ti=\E7\E[?47h:te=\E[2J\E[?47l\E8:'
+endif
+
+## Check for nicer manual browser.
+if (-x ~/bin/$SYS/man && -e ~/bin/$SYS/man.perl) then
+	unsetenv MANPATH		# This version searches $PATH
+	alias man ~/bin/$SYS/man -A
+else
+	alias man 'env PAGER="$MANPAGER" man'
+endif
+unsetenv LANG		# for linux man page badness
+
+##
+## Set various shell variables, some tcsh, some csh.
+##
+set filec			# File completion on
+set history = 100		# Keep this many commands in the history.
+set ignoreeof			# Control-D won't log me out.
+set noclobber			# Don't wipe out files with output redirection.
+set notify			# Print messages about background jobs.
+unset autologout		# Don't log me out automagically
+unset mail			# Don't hang my shell when the mail server dies
+set time = 10			# Print time for cmds that take longer than 10s
+unset savehist			# No .history file please
+set editmode = emacs		# Emacs command editing
+set listjobs			# Notify of pending jobs when ^Z
+set autolist = ambiguous	# More like Emacs
+set dextract			# Don't rotate the dir stack
+set dunique			# Don't add dirs already there
+set rmstar			# Prompt for rm *
+set correct = all		# try to correct commands
+set echo_style = both		# -n and \c recognized
+set complete = enhance		# cooler completion
+set cdpath = (~ ~/work)		# where to look when target of cd doesn't exist
+set nobeep			# never beep
+unset fignore
+if ($term != t10 && ! $?EMACS) then
+#	set watch = (1 any any)		# notify of logins logouts
+endif
+
+if ($?tcsh) then
+	if ($uid == 0) then
+		set promptend = "###"
+	else
+		set promptend = ">"
+	endif
+	if ($?EMACS || $TERM == emacs || $TERM == dumb) then
+		set prompt = "%h %m:%.2/$promptend "
+	else if ($term == xterm) then
+		## See .Xresources for *color0.
+		set prompt = "%B%{[33m%}%h %m:%.2/${promptend} %{[m%}%b"
+	else
+		set prompt = "%B%h %m:%.2/${promptend} %b"
+	endif
+	if ($tcsh:r:r > 5 && $tcsh:r:e > 1 && -e ~/.complete) source ~/.complete
+	bindkey ^G kill-whole-line		# Like Emacs
+else
+	## Csh hack to get the current dir in the prompt.
+	set prompt = "\! ${HOSTALIAS}:${cwd:t}% "
+	alias set_prompt	"set prompt = '$prompt'"
+	alias chdir		'chdir \!* && set_prompt'
+	alias cd		'cd \!* && set_prompt'
+	alias pushd		'pushd \!* && set_prompt'
+	alias popd		'popd \!* && set_prompt'
+endif
+
+## Pick up any .aliases file.
+if (-e ~/.aliases) source ~/.aliases
+
+endif				# From "if ($?prompt)" i.e. interactive
+
+### EOF

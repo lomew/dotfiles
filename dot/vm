@@ -1,0 +1,552 @@
+;;; Startup file for the VM emacs mail reader		-*-emacs-lisp-*-
+
+;; File frobbing
+(setq
+      vm-primary-inbox				"~/Mail/folders/VM"
+      vm-crash-box				"~/Mail/folders/VM.CRASH"
+      ;; See also ~/.procmailrc
+      vm-folder-directory			"~/Mail/folders/"
+      vm-folders-summary-directories		'("~/Mail/folders/")
+      vm-window-configuration-file		"~/.vm.windows")
+
+(setq vm-spool-files nil)
+
+(if (file-exists-p (~/ "priv/inbox"))
+    (setq vm-spool-files (cons '("VM" "~/priv/inbox" "VM.CRASH")
+			       vm-spool-files)))
+(setq vm-spool-files (cons '("VM" "/var/spool/mail/lomew" "VM.CRASH")
+			   vm-spool-files))
+;(setq vm-spool-files (cons '("VM" "imap:exchange:143:inbox:login:lomew:*" "VM.CRASH")
+;			   vm-spool-files))
+
+(setq vm-virtual-folder-alist
+  '(("unread"
+     (("VM")
+      (or (new) (unread))))
+    ("recent"
+     (("VM")
+      (sent-after "today")))		;hack
+    ("bugs"
+     (("VM")
+      (and (or (new) (unread)) (author "bugs@"))))
+    ("svn-sport"
+     (("VM")
+      (and (or (new) (unread))
+	   (subject "\\\[svn\\\] \\(sport\\|rbtcore\\|rbt-kernel\\)"))))
+    ("svn-bass"
+     (("VM")
+      (and (or (new) (unread)) (subject "\\\[svn\\\] bass"))))
+    ("petfood"
+     (("VM")
+      (recipient "petfood@")))
+    ("netdesign"
+     (("VM")
+      (recipient "netdesign@")))
+    ("badguys"
+     (("VM")
+      (recipient "badguys@")))
+    ("feature-request"
+     (("VM")
+      (recipient "feature-request@")))
+;    ("oskit-request"
+;     (("VM")
+;      (recipient "\\(oskit-\\(users\\|announce\\|notify\\|flames\\)-\\(request\\|approval\\)\\)\\|\\(owner-oskit-\\)")))
+    ))
+
+(defun sender-save ()
+  "Wrapper for `vm-save-message'.
+When given a prefix arg, cause `vm-save-message' to pick a default
+save file name based on the sender.  Otherwise behaves like
+`vm-save-message'.  Intended to be bound to `s'."
+  (interactive)
+  (if current-prefix-arg
+      (let ((current-prefix-arg nil)	; don't save `current-prefix-arg' msgs
+	    (vm-auto-folder-alist
+	     '(("From:"
+		(".*" . (replace-in-string
+			 (nth 1 (mail-extract-address-components
+				 (match-string 0)))
+			 "@.*" ""))))))
+	(call-interactively 'vm-save-message))
+    (call-interactively 'vm-save-message)))
+
+;; Note: the header parts have an implicit ^
+;; Try to keep this in order of frequency to make archiving fast
+;; See also ~/.procmailrc
+(setq vm-auto-folder-alist
+  '(("To\\|Cc\\|Apparently-To\\|Resent-To"
+     ("netdesign@lists"	. "l/netdesign")
+     ("badguys@lists"	. "l/badguys")
+     ("feature-request@lists" . "l/feature-request")
+     ("eng-dev-http@" . "l/http")
+     )
+    ("Subject:"
+     )
+    ("From:"
+     )
+    ("X-Random:"
+     )
+    ))
+
+
+;; Behavior booleans
+(setq vm-auto-center-summary			nil
+      vm-auto-decode-mime-messages		nil		;just do 'D'
+      vm-auto-folder-case-fold-search		t
+      vm-auto-get-new-mail			nil
+      vm-circular-folders			nil
+      vm-delete-after-saving			t
+      vm-delete-after-archiving			t
+      vm-do-x-mailer				t ;old lomew-hack, not for new
+      ;; when application/octet-stream, consult
+      ;; vm-mime-attachment-auto-type-alist
+      vm-infer-mime-types			t
+      vm-mail-check-interval			nil
+      vm-mime-charset-converter-alist           '(("utf-8" "iso-8859-1"
+						   "iconv -f utf-8 -t iso-8859-1//TRANSLIT"))
+      vm-mime-use-w3-for-text/html		nil
+      vm-move-after-deleting			t
+      vm-move-after-undeleting			t
+      vm-check-folder-types			nil ;speeds up archive
+      vm-frame-per-composition			nil
+      vm-frame-per-edit				nil
+      vm-use-toolbar				nil
+      vm-url-browser				'vm-mouse-send-url-to-netscape
+      vm-netscape-program			"firefox"
+      vm-netscape-program-switches		nil ;'("-a" "any")
+      )
+
+(setq vm-mime-external-content-types-alist
+      '(
+	("text/html"		"firefox")
+	;("application/msword"	"ooffice")
+	;("application/vnd.ms-powerpoint" "ooffice")
+	))
+
+(setq vm-mime-attachment-auto-type-alist
+      (append '(("\\.patch$" . "text/plain")
+		("\\.diff$" . "text/plain")
+		("\\.cc?$" . "text/plain")
+		("\\.h$" . "text/plain"))
+	      vm-mime-attachment-auto-type-alist))
+
+(setq vm-visible-headers '("Reply-To:"
+			   "Newsgroups:"
+			   "Resent-"
+			   "From:"
+			   "Sender:"
+			   "To:"
+			   "Apparently-To:"
+			   "Cc:"
+			   "Subject:"
+			   "X-Bugzilla-Reason:"
+			   "X-Zippy-Says:"
+			   "X-face:"
+			   "Date:"))
+
+(setq-default vm-summary-show-threads t)
+
+(setq vm-reply-subject-prefix             	"Re: "
+      vm-subject-ignored-prefix			"^\\(re: *\\(\\[\\w+ #[0-9]+\\]\\)? *\\)+" 	; for RUST/REQ
+      vm-forwarding-subject-format        	"Fwd: [%F: %s]"
+      vm-included-text-attribution-format 	"On %y-%M-%d %UF wrote:\n"
+      vm-summary-format "%a %*%n %3.3w %2M/%-2d %3l | %I%-17.17F %UI\"%s\"\n"
+      vm-summary-thread-indent-level		4
+      vm-summary-uninteresting-senders		(concat my-login-name "\\|"
+							my-mail-address)
+      vm-reply-ignored-addresses		(list (concat "\\<\\("
+							      my-login-name
+							      "\\|"
+							      my-mail-box
+							      "\\)\\>@"))
+      vm-mail-header-from			my-from-line
+      vm-forwarded-headers			'("From:" "To:" "CC:"
+						  "Newsgroups:"
+						  "Subject:" "Date:")
+      vm-unforwarded-header-regexp		nil
+      )
+
+;; Used by the %UF format option.  Tries to return a string like
+;;	Elvis Parsley <king@grassland.com>
+;; but if there is no full name (i.e. vm-full-name-of returns same as
+;; vm-from-of) will return
+;;	king@grassland.com
+;;
+;; XXX this depends on undocumented functions and may break in future
+;; VM releases
+(defun vm-summary-function-F (m)
+  (let ((full (or (vm-full-name-of m)
+		  (progn (vm-su-do-author m) (vm-full-name-of m))))
+	(from (or (vm-from-of m)
+		  (progn (vm-su-do-author m) (vm-from-of m)))))
+    (if (string-equal full from)
+	from
+      (format "%s <%s>" full from))))
+
+;; Used by the %UI format option.  If the message is not a root of a
+;; thread, return a lot of spaces (enough to push it off the screen),
+;; otherwise return an empty string.
+;;
+;; XXX this depends on undocumented functions and may break in future
+;; VM releases
+(defvar vm-su-lots-of-spaces (make-string 100 ?\ ))
+(defun vm-summary-function-I (m)
+  (if (and vm-summary-show-threads (> (vm-th-thread-indentation m) 0))
+      vm-su-lots-of-spaces
+    ""))
+
+
+;;;---------------------------------------------------------------------
+;;; Hooks
+
+(setq vm-mode-hook
+  (function
+   (lambda ()
+     (progn (make-local-variable 'version-control)
+	    (setq version-control 'nil))
+     (cond (running-xemacs
+	    (define-key vm-mode-map [(control /)] 'vm-undo)))
+     (define-key vm-mode-map "\C-m" (function
+				     (lambda (arg)
+				       (interactive "p")
+				       ;; Magic so window configs are applied.
+				       (setq this-command 'vm-scroll-forward)
+				       (vm-scroll-forward (or arg 1)))))
+     (define-key vm-mode-map "C" 'vm-discard-cached-data)
+     (define-key vm-mode-map "j" 'vm-goto-message)
+     (define-key vm-mode-map "x" 'vm-expunge-folder)
+     (define-key vm-mode-map "X" 'vm-quit-no-change)
+     (define-key vm-mode-map "s" 'sender-save)
+     (define-key vm-mode-map "Z" 'myspam-forward-spam)
+     )))
+
+;; This is for new font lock.
+(put 'vm-summary-mode 'font-lock-defaults
+     '(vm-summary-font-lock-keywords t nil nil nil))
+(setq vm-summary-font-lock-keywords
+      '(
+	;; New or Unread messages
+	("^..[NU].*" . font-lock-function-name-face)
+
+	;; Deleted messages
+	("^..D.*" . font-lock-string-face)
+
+	;; Subject part
+	("\".*" . message-header-contents)))
+
+(setq vm-summary-mode-hook
+ (function
+  (lambda ()
+    (cond (can-fontify
+	   (turn-on-font-lock)
+	   (setq vm-summary-highlight-face
+		 (make-face 'vm-summary-highlight-face))
+;see above
+;	    (setq font-lock-keywords-only t) ;XXX need to read font-lock.el
+;	    (setq font-lock-keywords
+;		  '(
+;		    ;; New or Unread messages
+;		    ("^..[NU].*" . font-lock-function-name-face)
+;
+;		    ;; Deleted messages
+;		    ("^..D.*" . font-lock-string-face)
+;
+;		    ;; Subject part
+;		    ("\".*" . message-header-contents)))
+
+;forgot what this was for
+;	    (cond ((not running-fsf-with-good-font-lock)
+;		   (setq message-header-contents 'italic)
+;		   (set-face-background vm-summary-highlight-face
+;					"lightskyblue3")))
+	   )))))
+
+;(setq vm-mail-mode-hook
+;  (function
+;   (lambda ()
+;     (define-key vm-mail-mode-map "\t" 'mail-magic-tab))))
+
+(setq vm-reply-hook
+ (function
+  (lambda ()
+    (let ((case-fold-search t)
+	  (ask-about-these '("ugs" "grads" "profs" "staff"
+			     "everybody" "office" "everyone" "everyone2"))
+	  (pt (point-marker)))
+      
+      ;; Check for no subject.
+      (goto-char (point-min))
+      (if (re-search-forward "^subject:[ \t]*$" pt t)
+	  (progn
+	    (delete-horizontal-space)
+	    (insert " yer mail")))
+      (goto-char pt)
+
+	;; Confirm mail to certain lists
+      (if (and (re-search-backward (concat "^\\(to\\|cc\\):[ -~\t\n]*\\<\\("
+					   (mapconcat 'identity ask-about-these
+						      "\\|")
+					   "\\)@")
+				   nil t)
+	       (not (yes-or-no-p (format "Really mail to %s? "
+					 (buffer-substring
+					  (match-beginning 2)
+					  (match-end 2))))))
+	  (progn
+	    (kill-buffer (current-buffer))
+	    (message "Reply cancelled."))
+	(goto-char pt))
+
+      ;; check for req
+;;      (if (re-search-backward "^subject:[ \t]+.*\\[.*#.*\\]" nil t)
+;;	  (progn
+;;	    (open-line 1)
+;;	    (insert "X-Request-Do: ")))
+      ;; leave point there so can type in the x-request-do stuff
+
+      ))))
+
+;; HTML stuff from MS exchange doesn't have a newline at the end.
+(defun force-newline-at-end-of-message ()
+  (goto-char (point-max))
+;  (if (not (bolp))
+      (let ((buffer-read-only nil))
+	(newline)))
+;  )
+
+(add-hook 'vm-arrived-message-hook 'force-newline-at-end-of-message)
+
+;(add-hook 'vm-mode-hook 'mc-install-read-mode)
+;(add-hook 'vm-summary-mode-hook 'mc-install-read-mode)
+;(add-hook 'vm-virtual-mode-hook 'mc-install-read-mode)
+;(add-hook 'vm-mail-mode-hook 'mc-install-write-mode)
+
+;; hack for RUST/REQ
+;(defun mail-magic-tab ()
+;  (interactive)
+;  (if (not (save-excursion
+;	      (beginning-of-line nil)
+;	      (looking-at "x-request-do: ")))
+;      (tab-to-tab-stop)
+;    (let* ((alist '(("resolve") ("give ") ("stall") ("prio ")
+;		     ("requester ") ("user ") ("take")))
+;	    (end (point))
+;	    (beg (save-excursion
+;		   (or (= (char-syntax (preceding-char)) ?\ )
+;		       (forward-word -1))
+;		   (point)))
+;	    (pattern (buffer-substring beg end))
+;	    (completion (try-completion pattern alist)))
+;      (cond ((eq completion t))
+;	     ((null completion)
+;	      (message "No completion for \"%s\"" pattern)
+;	      (ding))
+;	     ((not (string-equal pattern completion))
+;	      (delete-region beg end)
+;	      (insert completion))
+;	     (t
+;	      (message "Making completion list...")
+;	      (with-output-to-temp-buffer "*Completions*"
+;		(display-completion-list (all-completions pattern alist)))
+;	      (message "Making completion list...done"))))))
+
+;; XXX This depends on undocumented VM functions/variables and a new
+;; release may break it
+;; this doesn't work
+;(setq vm-arrived-message-hook
+;  (function
+;   (lambda ()
+;     (lomew-debug-print "called\n")
+;     (let ((folder (vm-auto-select-folder new-messages ;HACK!
+;					   vm-auto-folder-alist)))
+;	(if (stringp folder)
+;	    (progn
+;	      (lomew-debug-print "\tyep, save in %s\n" folder)
+;	      (vm-save-message folder))
+;	  (lomew-debug-print "\tnope %s\n" folder)
+;	  )))))
+
+;; This depends on undocumented functions and my break in a future release.
+
+(defun append-strings-to-file (file &rest strings)
+  (let ((buf (get-buffer-create " *append*"))
+	beg)
+    (save-excursion
+      (set-buffer buf)
+      (erase-buffer buf)
+      (setq beg (point))
+      (insert (mapconcat 'identity strings ""))
+      (append-to-file beg (point) file))))
+
+(defvar oskit-list-file-format "/n/fast/usr/site/lib/lists/%s.list")
+(defun oskit-sub (from)
+  "C-u to prompt for who to subscribe, default is what is in the From:."
+  (interactive (list (if current-prefix-arg
+			 (read-string "Whom should I subscribe? "))))
+  (vm-select-folder-buffer)
+  (let ((m (car vm-message-pointer))
+	to mlist listfile)
+    (or from
+	(setq from (mj-addr m "subscribe" t)))
+    (setq to (nth 1 (mail-extract-address-components
+		     (or (vm-get-header-contents m "To:")
+			 (vm-get-header-contents m "Apparently-To:")))))
+    ;; Make full domain.
+    (setq to (replace-in-string to "@.*" "@cs.utah.edu"))
+    (setq mlist (replace-in-string to "-request" ""))
+    (setq listfile (format oskit-list-file-format
+			   (replace-in-string mlist "@.*" "")))
+    ;; Have to do this because Emacs runs the `mail-send-actions' in
+    ;; a `condition-case' for some unreasonable reason.
+    (if (not (file-writable-p listfile))
+	(error "listfile is not writable"))
+    (let ((mail-default-headers nil))
+      (vm-reply 1))
+    (save-excursion
+      (goto-char (point-min))
+      ;; Fix up the To: line if they C-u'd to set it.
+      (if current-prefix-arg
+	  (progn
+	    (re-search-forward "^To: .*")
+	    (replace-match (concat "To: " from))))
+      (re-search-forward (concat "^" (regexp-quote mail-header-separator)
+				 "\n"))
+      (insert (format "\
+You have been added to the list
+	%s
+as
+	%s
+
+If this is incorrect, please notify %s.\n\n" mlist from to))
+      (if (string-match "oskit-users-request" to)
+	  (insert "\
+Note that mail to the oskit-announce list goes to the oskit-users
+list as well.  You don't need to be subscribed to both.\n\n"))
+
+      (insert "\
+Archives of the lists are available in
+	ftp://flux.cs.utah.edu/flux/oskit/mail/html/index.html	(HTML)
+	ftp://flux.cs.utah.edu/flux/oskit/mail/index.html	(mbox)
+
+For more info about the OSKit, see
+	http://www.cs.utah.edu/projects/flux/oskit/\n\n")
+
+      (delete-blank-lines)
+
+      ;; Now set it up so the person gets added when the message is sent.
+      (setq mail-send-actions (cons (cons 'append-strings-to-file
+					  (list listfile from "\n"))
+				    mail-send-actions)))))
+
+(defun mj-test ()
+  (interactive)
+  (vm-select-folder-buffer)
+  (let ((m (car vm-message-pointer)))
+    (switch-to-buffer (vm-buffer-of (vm-real-message-of m)))
+    ;(mj-addr m "unsubscribe\\|remove" )
+    ))
+(defun mj-addr (m regexp &optional default-to-from)
+  (setq regexp (concat "^\\(" regexp "\\)[ \t]+"))
+  (let ((case-fold-search t))
+    (or (save-excursion
+	  (set-buffer (vm-buffer-of (vm-real-message-of m)))
+	  (goto-char (point-min))
+	  (re-search-forward "^$" nil t)
+	  (if (re-search-forward regexp nil t)
+	      (let ((beg (point))
+		    (end (progn (end-of-line) (point))))
+		(and (/= beg end) (buffer-substring beg end)))))
+	(let ((subj (vm-get-header-contents m "Subject:"))
+	      addr)
+	  (if (and subj (string-match regexp subj))
+	      (progn
+		(setq addr (substring subj (match-end 0)))
+		(if (not (string-equal addr ""))
+		    addr))))
+	(and default-to-from
+	     (vm-get-header-contents m "From:")))))
+
+(defun remove-line-from-file (line file &optional prompt)
+  (let ((case-fold-search t)
+	found)
+    (save-excursion
+      (find-file file)
+      (goto-char (point-min))
+      (if (re-search-forward line nil t)
+	  (let ((beg (progn (beginning-of-line) (point)))
+		(end (progn (end-of-line) (point)))
+		line)
+	    (setq line (buffer-substring beg end))
+	    (if (or (not prompt)
+		    (y-or-n-p (format "Remove %s from %s? " line (file-name-nondirectory file))))
+		(progn
+		  (beginning-of-line)
+		  (kill-line 1)
+		  (setq found t)))))
+      found)))
+
+(defun oskit-unsub ()
+  (interactive)
+  (vm-select-folder-buffer)
+  (let ((m (car vm-message-pointer))
+	from to mlist listfile)
+    ;; Figure out who to unsubscribe and from which list.
+    (setq to (nth 1 (mail-extract-address-components
+		     (or (vm-get-header-contents m "To:")
+			 (vm-get-header-contents m "Apparently-To:")))))
+    (setq to (replace-in-string to "@.*" "@cs.utah.edu"))
+    (setq mlist (replace-in-string to "-request" ""))
+    (setq listfile (format oskit-list-file-format
+			   (replace-in-string mlist "@.*" "")))
+    (setq from (nth 1 (mail-extract-address-components (mj-addr m "unsubscribe\\|remove" t))))
+    ;; Remove them from the list file.
+    (if (or (remove-line-from-file from listfile t)
+	     (and (string-equal mlist "oskit-users@cs.utah.edu")
+		  (remove-line-from-file from (replace-in-string listfile "users" "notify") t)))
+	nil
+      (error "cannot find %s in listfiles" from))
+    ;; Now reply.
+    (let ((mail-default-headers nil))
+      (vm-reply 1))
+    (save-excursion
+      (goto-char (point-min))
+      (re-search-forward (concat "^" (regexp-quote mail-header-separator) "\n"))
+      (insert (format "\
+The address
+	%s
+has been removed from the list
+	%s\n\n" from mlist))
+      (delete-blank-lines))))
+
+;(defconst myspam-spam-addr "gsubmit@submit-1.brightmail.com")
+(defconst myspam-spam-addr "spam@access.ironport.com")
+(defvar myspam-notspam-addr "")
+(defun myspam-forward-spam ()
+  "Forward the current message to the spam address.
+If given a prefix arg, will forward to the not-spam address.
+Extracts the To: recipient for you."
+  (interactive)
+  (let ((addr (if current-prefix-arg myspam-notspam-addr myspam-spam-addr))
+	m to)
+    (vm-follow-summary-cursor)
+    (vm-select-folder-buffer)
+    (vm-check-for-killed-summary)
+    (vm-error-if-folder-empty)
+    (setq m vm-message-pointer)
+;    (setq name (replace-in-string (vm-su-to (car m))
+;				  "@.*" (concat "@" addr)))
+    (setq name addr)
+    ;; Call the normal forward routine.
+    (vm-forward-message-all-headers)
+    ;; Mark it as deleted
+    (if (not (vm-deleted-flag (car m)))
+	(vm-set-deleted-flag (car m) t))
+    (save-excursion
+      ;; Fix the To field
+      (mail-position-on-field "To")
+      (insert name)
+      ;; hack for my bcc field
+      (if (mail-position-on-field "Bcc" t)
+	  (kill-entire-line)))))
+
+;;; .vm ends here

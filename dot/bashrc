@@ -1,0 +1,116 @@
+# Bash startup file for interactive shells
+
+###---------------------------------------------------------------------
+
+umask 022
+
+## This is unset later in .bash_aliases if -f /usr/local/bin/man
+export MANPATH=/usr/man:/usr/lang/man:/usr/local/man:/usr/local/apps/man:/usr/local/gnu/man:/usr/local/share/contrib/man:/usr/afsws/man
+
+## Basic path built upon later
+export PATH=/usr/bin:/usr/sbin:/usr/ccs/bin:/usr/local/bin:/usr/local/apps/bin:/usr/ucb:/bin:/usr/local/X11/bin:/usr/bin/X11
+
+## This is a dir on some spots, a script on others
+[ -d /usr/local/bin/X11 ] && PATH=$PATH:/usr/local/bin/X11
+
+##           HOSTTYPE, OSTYPE
+## hpux	     hp8000s700, hpux
+## ultrix    decstation, Ultrix
+## sunos4    sun4, sunos4
+## bsdhp300  hp[34]00, ???
+## bsdhp700  hp[78]00, mtXinu?
+## irix	     iris4d, Irix5
+## aix	     rs6000, ???
+
+# OS_TYPE=${OS_TYPE:-`uname -s`}
+# ARCH_TYPE=${ARCH_TYPE:-`uname -m`}
+# RELEASE=${RELEASE:-`uname -r`}
+# release=$RELEASE
+# MACHINE_TYPE=$OS_TYPE$ARCH_TYPE
+
+##
+## sorted according to freq of use
+##
+case $HOSTTYPE:$OSTYPE in
+sun4:sunos[45]|sparc:SunOS[45])
+	machine=$OSTYPE
+	export OPENWINHOME=/usr/openwin
+	PATH=$PATH:$OPENWINHOME/bin:/usr/5bin
+	export XFILESEARCHPATH=/usr/local/X11/lib/X11/%T/%N:$OPENWINHOME/lib/%T/%N
+	export LD_LIBRARY_PATH=/usr/local/X11/lib:$OPENWINHOME/lib
+	MANPATH=$OPENWINHOME/man:$MANPATH
+	;;
+hp9000s[34]00:hpux)
+	machine=hpux300
+	;;
+hp9000s[78]00:hpux)
+	machine=hpux700
+	;;
+*:Irix*)
+	machine=sgi
+	MANPATH=/usr/share/catman:/usr/share/man:/usr/catman:$MANPATH
+	;;
+hp[78]00*)
+	machine=hp700
+	## X won't work if these aren't near front
+	PATH=/usr/local:/usr/gnu/bin:/usr/new:/usr/new/X11:$PATH
+	;;
+hp[34]00*)
+	machine=hp300
+	## X won't work if these aren't near front
+	PATH=/usr/local:/usr/gnu/bin:/usr/new:/usr/new/X11:$PATH
+	;;
+# *M88100)???
+#	machine=motorola
+#	;;
+rs6000:*)
+	machine=rs6000
+	;;
+decstation:Ultrix)
+	machine=dec
+	;;
+*)
+	machine=unknown
+	;;
+esac
+
+###---------------------------------------------------------------------
+
+tcbold=''
+tcoff=''
+case $TERM in
+vt100|xterm|vs100)
+	tcbold='[5m'
+	tcoff='[m'
+	;;
+esac
+
+unset HISTFILE				# no slow history file stuff
+HISTSIZE=100
+HISTCONTROL=ignoreboth
+IGNOREEOF=10
+unset MAILCHECK				# shell won't hang if sunset goes down
+#PS1="\[$tcbold\]\! \h:\W$\[$tcoff\] "	# XXX I want real bold, this is a hack
+					# and works only with newer bash's
+PS1="\! \h:\W$ "
+set -o noclobber
+ulimit -c unlimited			# big core
+
+# XXX watch for logins logouts
+# XXX autocorrect
+# XXX print time commands take to execute
+# XXX notify of pending jobs when ^Z
+# XXX better completion e.g., c.l.p ==> comp.lang.perl
+
+PATH=~/bin/@sys:~/bin:/usr/local/sbin:/usr/local/gnu/bin:$PATH:/usr/afsws/bin:/usr/local/etc:/usr/afsws/etc:/usr/etc:/etc:/var/site/etc:/usr/local/contrib/bin:/usr/local/share/contrib/bin
+
+export NNTPSERVER=news
+export EDITOR=vi
+export VISUAL=vi
+export PAGER=less
+export LESS="-imnz-3"
+[ -d ~/lib ] && export PERLLIB=~/lib
+
+[ -f ~/.bash_aliases ] && . ~/.bash_aliases
+
+## .bashrc ends here
