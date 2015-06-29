@@ -24,12 +24,15 @@
 (defconst my-mail-address (cond ((string= my-domain "cs.utah.edu")
 				 (concat my-login-name "@pobox.com"))
 				((string= my-domain "riverbed.com")
-				 "Bart.Robinson@riverbed.com")
+				 "bart.robinson@riverbed.com")
 				(t
-				 (concat my-login-name "@" my-domain))))
+				 "bart.robinson@riverbed.com")
+				 ;(concat my-login-name "@" my-domain)
+				 ))
 (defconst my-mail-box (cond ((string= my-domain "riverbed.com")
 			     "Bart.Robinson")
 			    (t
 			     my-login-name)))
+(defconst my-smtp-login-name "lomew")
 (defconst my-from-line (concat my-full-name " <" my-mail-address ">"))
 (defconst my-url (format "http://www.cs.utah.edu/~%s/" my-login-name))
