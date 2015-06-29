@@ -33,26 +33,49 @@ for ($dir = $cwd, $count = 0; ; $dir =~ s-[^/]*/$--, $count++) {
     last if -e "${dir}.glimpse_index";
 }
 die "Couldn't find a glimpse index\n" if $dir eq "";
+$rdir = $dir;				# raw dir
 $dir = quotemeta($dir);
 ($cwdr = $cwd) =~ s/^$dir//;		# cwd relative to $dir
 $dots = '../' x $count;			# how to get to glimpse files
-print STDERR "Found index in $dir ($dots)\n";
+print STDERR "Found index in $rdir ($dots)\n";
 
 ##
-## Look for a -l arg
+## Check args
 ##
+@args = ();
 $justlist = 0;
+$fromindexdir = 1;
 foreach $_ (@ARGV) {
     if ($_ eq "-l") {
 	$justlist = 1;
+    } elsif ($_ eq "--stay-put") {
+	$fromindexdir = 0;
+	next;				# don't pass to glimpse
     }
+    push @args, $_;
+}
+
+if ($fromindexdir) {
+    # Run from the index dir
+    $cwd = $rdir;
+    chdir $rdir || die "chdir: $!\n";
+    if (defined $ENV{INSIDE_EMACS}) {
+	# tell emacs where we're going
+	print "grope: Entering directory \`$rdir\'\n";
+    }
+    $cwdr = "./";
+    $dots = "";
+}
+
+if (-M $rdir . ".glimpse_index" > 1) {
+    print "grope: Warning: index is more than 1 day old\n";
 }
 
 ##
 ## Open the glimpse process and turn the output into relative paths.
 ##
 $gotsome = 0;
-@nargv = map { "'$_'" } @ARGV;
+@nargv = map { "'$_'" } @args;
 open(GLIMPSE, "glimpse -ynH $dir @nargv |") || die "pipe";
 while (<GLIMPSE>) {
     ## We have no hope of relativation unless at least the first part of
