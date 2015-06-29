@@ -2,6 +2,10 @@
 
 if ($?prompt) echo "Running .aliases..."
 
+alias g		git
+alias gn	git --no-pager
+alias s		svn
+
 alias frmc	'frm ~/priv/carrie.spool'
 alias dmalloc 'eval `\dmalloc -C \!*`'
 
@@ -79,7 +83,7 @@ alias rless	'co -p \!:1 | less'	# for browsing *,v files
 alias yay	'echo wow'
 alias wow	'echo yay'
 alias PS	/usr/ucb/ps
-alias ymd	'date +%y%m%d'
+alias ymd	'date +%Y-%m-%d'
 alias udiff	'cvs diff -rBASE -rHEAD'
 alias diff	'diff -u'
 alias rcsdiff	'rcsdiff -u'
@@ -116,5 +120,8 @@ switch ($SYS)
     case *hpbsd*:
 	alias locate	/usr/bin/find
 	alias swapinfo	pstat -w
+	breaksw
+    case *darwin*:
+	alias sleepwake 'grep -i airport_ /var/log/system.log'
 	breaksw
 endsw
