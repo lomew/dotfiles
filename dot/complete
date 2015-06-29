@@ -13,6 +13,9 @@ complete rm		'n/*/f:^{.*,*.{c,cc,C},*.{h,hh,H},*.scm,*.el{,c}}/'
 complete {{,set,unset,print}env}	'p/1/e/'
 complete unalias		'p/1/a/'
 
+## complete certain env vars with paths
+complete env                    'c/CC=/f/' 'c/CXX=/f/' 'c/LD_LIBRARY_PATH=/f/'
+
 ## complete with jobs
 complete {-%*,fg,bg}		'c/%/j/'
 complete kill			'c/-/S/' 'c/%/j/'
@@ -39,28 +42,44 @@ complete dd			'c/if=/f/' 'c/of=/f/'
 ## Complete file:// urls with local filenames
 ## complete the tag and branch portions of sport svn urls
 ## the sed part is to get around autocompletion adding more slashes
-#complete svn			'p/1/(add blame annotate cat checkout cleanup commit copy delete remove diff export help import info list lock log merge mkdir move rename propdel propedit propget proplist propset resolved revert status switch unlock update)/' 'c|file://|f|'
+## Note we have to pseudo-quote the ^ since tcsh thinks we are trying to negate the glob
+## and it crashes.  So we put the ^ within a singular glob.
 complete svn \
-'p/1/(add blame annotate cat checkout cleanup commit copy delete remove diff export help import info list lock log merge mkdir move rename propdel propedit propget proplist propset resolved revert status switch unlock update)/' \
+'p/1/(add blame annotate cat checkout cleanup commit copy delete remove diff export help import info list lock log merge mergeinfo mkdir move rename propdel propedit propget proplist propset resolved revert status switch unlock update)/' \
 'c|file://|f|' \
+'c,{^}/branches/,`svn info | sed -n s/Repository.Root:.//p | xargs -i svn ls "{}/branches" | sed sX/XX`,/,' \
+'c,{^}/tags/,`svn info | sed -n s/Repository.Root:.//p | xargs -i svn ls "{}/tags" | sed sX/XX`,/,' \
+'c,{^}/,`svn info | sed -n s/Repository.Root:.//p | xargs svn ls | sed sX/XX`,/,' \
+'c,svn://svn/va/branches/,`svn ls svn://svn/va/branches | sed sX/XX`,/,' \
+'c,svn://svn/va/tags/,`svn ls svn://svn/va/tags | sed sX/XX`,/,' \
+'c,svn://svn/va/,`svn ls svn://svn/va | sed sX/XX`,/,' \
+'c,svn://svn/rbtcore/branches/,`svn ls svn://svn/rbtcore/branches | sed sX/XX`,/,' \
+'c,svn://svn/rbtcore/tags/,`svn ls svn://svn/rbtcore/tags | sed sX/XX`,/,' \
+'c,svn://svn/rbtcore/,`svn ls svn://svn/rbtcore | sed sX/XX`,/,' \
 'c,svn://svn/sport/branches/,`svn ls svn://svn/sport/branches | sed sX/XX`,/,' \
 'c,svn://svn/sport/tags/,`svn ls svn://svn/sport/tags | sed sX/XX`,/,' \
 'c,svn://svn/sport/,`svn ls svn://svn/sport | sed sX/XX`,/,' \
-'c,svn://svn/bass/branches/,`svn ls svn://svn/bass/branches | sed sX/XX`,/,' \
-'c,svn://svn/bass/tags/,`svn ls svn://svn/bass/tags | sed sX/XX`,/,' \
-'c,svn://svn/bass/,`svn ls svn://svn/bass | sed sX/XX`,/,' \
-'c,svn://svn/shmobile/branches/,`svn ls svn://svn/shmobile/branches | sed sX/XX`,/,' \
-'c,svn://svn/shmobile/tags/,`svn ls svn://svn/shmobile/tags | sed sX/XX`,/,' \
-'c,svn://svn/shmobile/,`svn ls svn://svn/shmobile | sed sX/XX`,/,' \
-'c,svn://svn/rbtcore/branches/,`svn ls svn://svn/rbtcore/branches | sed sX/XX`,/,' \
-'c,svn://svn/rbtcore/tags/,`svn ls svn://svn/rbtcore/tags | sed sX/XX`,/,' \
-'c,svn://svn/rbtcore/,`svn ls svn://svn/rbtcore | sed sX/XX`,/,'
+'c,svn://svn/va-product/branches/,`svn ls svn://svn/va-product/branches | sed sX/XX`,/,' \
+'c,svn://svn/va-product/tags/,`svn ls svn://svn/va-product/tags | sed sX/XX`,/,' \
+'c,svn://svn/va-product/,`svn ls svn://svn/va-product | sed sX/XX`,/,' \
+'c,svn://svn/sh-product/branches/,`svn ls svn://svn/sh-product/branches | sed sX/XX`,/,' \
+'c,svn://svn/sh-product/tags/,`svn ls svn://svn/sh-product/tags | sed sX/XX`,/,' \
+'c,svn://svn/sh-product/,`svn ls svn://svn/sh-product | sed sX/XX`,/,'
+
+complete git \
+'p/1/(add bisect branch checkout clone commit diff fetch grep init log merge mv pull push rebase reset rm show status tag stash stat   svn svn-in svn-out co br ci)/' \
+'n/svn/(init fetch clone rebase dcommit branch tag log blame find-rev set-tree create-ignore show-ignore mkdirs commit-diff info proplist propget show-externals gc reset)/' \
+'n/co/`git br -a`/' \
+'n/checkout/`git br -a`/' \
+'n/log/`git br -a`/' \
+'n/rebase/`git br -a`/'
 
 ## Complete -M flag to man with directories.
 complete man			'c/-M/d/'
 
 ## complete "service" command with stuff from /etc/rc.d/init.d
 complete su1			'p/1/c/' 'n|service|F:/etc/rc.d/init.d|'
+complete sudo                   'p/1/c/' 'n|service|F:/etc/rc.d/init.d|'
 
 ## complete, e.g., --with-tmslib=DIR
 complete *configure		'c/--with-*=/d/'
