@@ -248,6 +248,8 @@ unsetenv LESSOPEN	# no thanks
 setenv LESS '-imnfz-3'
 setenv RCSINIT '-zLT'
 setenv PERLLIB $HOME/lib/perl/${SYS}:$HOME/lib/perl
+# also .pydistutils.old and py-lib.old, for reviewboard dev
+#setenv PYTHONPATH $HOME/py-lib
 setenv TMPDIR /tmp
 # setenv CFLAGS '-pipe'
 setenv CALOPT '-nodata -nocolor'	# for the cal program
