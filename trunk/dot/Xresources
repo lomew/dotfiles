@@ -87,7 +87,7 @@
 # define EMACS_FONT_BI	COURIER14BI
 # define EMACS_VFONT_M	HELVETICA14M
 # define EMACS_VFONT_B	HELVETICA14B
-# define EMACS_GEOMETRY	164x70+46+27
+# define EMACS_GEOMETRY	200x55+0+0
 # define XTERM_FONT	lucidasanstypewriter-12
 # define XTERM_FONT_B	lucidasanstypewriter-bold-12
 #elif WIDTH >= 1280
@@ -98,7 +98,7 @@
 # define EMACS_VFONT_M	HELVETICA12M
 # define EMACS_VFONT_B	HELVETICA12B
 ! define EMACS_GEOMETRY	81x60-10+35
-# define EMACS_GEOMETRY	164x70+0+0
+# define EMACS_GEOMETRY	200x55+0+0
 # define XTERM_FONT	6x13
 # define XTERM_FONT_B	6x13bold
 #else
@@ -153,7 +153,8 @@ Mwm*keyboardFocusPolicy			: pointer
 !!! Emacs ===============================================================
 
 #ifdef COLOR
-# define EMACS_BG	beige
+# define EMACS_BG_OLD	beige
+# define EMACS_BG	white	
 # define EMACS_FG	black
 # define EMACS_MENU_FG	gray90
 # define EMACS_MENU_BG	gray30
@@ -207,6 +208,7 @@ Emacs*XlwScrollBar.ArrowPosition	: same
 !! It chooses the ugly -i- italic ones instead of the -o- oblique ones.
 !!
 !Emacs.Font				: EMACS_FONT_M
+Emacs.Font				: Monospace-12
 !Emacs*EmacsFrame.default.attributeFont	: EMACS_FONT_M
 !Emacs*EmacsFrame.italic.attributeFont	: EMACS_FONT_I
 !Emacs*EmacsFrame.bold-italic.attributeFont: EMACS_FONT_BI
