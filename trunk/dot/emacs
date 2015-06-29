@@ -70,10 +70,6 @@ regular expression search was done with `string-match'."
 (cond ((string-match "XEmacs\\|Lucid" (emacs-version)) (setq running-xemacs t))
       ((string-match "^GNU" (emacs-version)) (setq running-fsf t)))
 
-(defconst using-x11 (cond ((boundp 'window-system) (eq window-system 'x))
-			  ((fboundp 'device-type) (eq (device-type) 'x))
-			  ('default nil))
-  "Non-nil if we are running X11 or not.")
 (defconst using-w32 (cond ((boundp 'window-system) (eq window-system 'w32))
 			  ((fboundp 'device-type) (eq (device-type) 'w32))
 			  ('default nil))
@@ -81,28 +77,17 @@ regular expression search was done with `string-match'."
 (defconst using-mac (cond ((boundp 'window-system) (eq window-system 'ns))
 			  ('default nil))
   "Non-nil if we are running win32 or not.")
-(defconst using-tty (cond ((boundp 'device-type) (eq (device-type) 'tty))
-			  ('default (null window-system)))
-  "Non-nil if we are using tty mode.")
-
-(defconst have-color (or (and (fboundp 'x-display-color-cells)
-			      using-x11
-			      (> (x-display-color-cells) 2))
-			 (and (fboundp 'device-color-cells)
-			      (device-color-cells)
-			      (> (device-color-cells) 2)))
-  "Whether or not this Emacs can display colors.")
-
-(defconst can-fontify (or running-xemacs
-			  (and running-fsf (or using-x11 using-w32)))
-  "Whether this emacs can do font-lock or not.")
 
 ;;;---------------------------------------------------------------------
 ;;; Path settings.
 
 (setq load-path (append (list (~/ "emacs")
+			      (~/ "install/emacs/site-lisp/org")
 			      (~/ "emacs/vm")
 			      (~/ "emacs/lsvn")
+			      (~/ "emacs/lgit")
+			      (~/ "emacs/magit")
+			      (~/ "emacs/Fill-Column-Indicator")
 			      ;(~/ "emacs/gnus5")
 			      (~/ "emacs/mailcrypt")
 			      ;(~/ "emacs/w3")
@@ -110,6 +95,7 @@ regular expression search was done with `string-match'."
 			      (~/ "emacs/eterm")
 			      ;(~/ "emacs/elib")
 			      (~/ "emacs/tramp/lisp")
+			      "/usr/local/share/emacs/site-lisp/mu4e"
 			      )
 			load-path))
 
@@ -149,6 +135,7 @@ regular expression search was done with `string-match'."
  read-buffer-completion-ignore-case t
  complex-buffers-menu-p		t
  default-major-mode		'text-mode
+ display-time-mail-file		'dont-bother	; don't check for mail
  display-time-display-time-foreground "yellow"
  enable-local-variables		t
  enable-local-eval		'ask-me
@@ -163,7 +150,9 @@ regular expression search was done with `string-match'."
  line-number-mode		t
  load-warn-when-source-newer	t
  minibuffer-max-depth		2		;XEmacs needs this for e-r-m?
+ mouse-wheel-scroll-amount	'(1 ((shift) . 1)) ;; one line at a time
  next-line-add-newlines		nil		;C-n will beep at bottom
+ parens-require-spaces		nil		;no spaces before parens
  progress-feedback-use-echo-area t		;fontification progress
  require-final-newline		'ask-me
  search-highlight		t
@@ -184,7 +173,8 @@ regular expression search was done with `string-match'."
 
 (when running-fsf
   (if (fboundp 'tool-bar-mode) (tool-bar-mode 0))
-  (if (fboundp 'scroll-bar-mode) (scroll-bar-mode 0))
+; kinda like scroll bars with wider screens...
+;  (if (fboundp 'scroll-bar-mode) (scroll-bar-mode 0))
   (if (fboundp 'menu-bar-mode) (menu-bar-mode 0)))
 
 ;; Variables for certain packages.
@@ -197,6 +187,9 @@ regular expression search was done with `string-match'."
  browse-url-mozilla-program	(if using-mac
 				    "open" ;uses default browser
 				  "firefox")
+ calendar-latitude              37.4
+ calendar-longitude             -122.2
+ calendar-location-name         "San Francisco, CA"
  change-log-default-name	"~/priv/ChangeLog"
  comint-password-prompt-regexp	(concat "\\("
 					 "\\("
@@ -209,8 +202,8 @@ regular expression search was done with `string-match'."
 					 "[Pp]assword\\|pass ?phrase"
 					"\\):\\s *\\'")
  ;; Do make -C instead of "cd dir && make" to make jump-to-error work better
-; compile-command		"make -C /work/lomew/build -j2 sport"
- compile-command		"distcc-make -C /work/lomew/build.va PRETTY=y edge dc"
+ ;; note this relies on /work -> /Users, and the vm having ~/work -> /mnt/hgfs/work
+ compile-command		"ssh vlux make -j2 -C /work/lomew/build.va PRETTY=y edge dc dsnap vapython"
  compilation-scroll-output	t	;scroll output as it appears
  compilation-error-regexp-systems-list '(gnu 4bsd)
  compilation-message-face	'default ;emacs-23, i don't want underlines
@@ -226,8 +219,10 @@ regular expression search was done with `string-match'."
  gnus-inhibit-startup-message	t		;must be here instead of .gnus
  grep-command			"grep -nH -e "
  hypropos-programming-apropos	t
+ ibuffer-bury-self-on-visit	t
  lazy-lock-stealth-time		nil		;interferes with follow.el
  lsvn-commit-template "BugID: \nCC: \nApproved-by: \nReviewed-by: \n"
+ lgit-commit-template lsvn-commit-template
 ; mail-archive-file-name		"~/Mail/sent-mail.ar"
  ;; Same as mail-self-blind but includes a full mail address.
  mail-default-headers		(concat "BCC: " my-login-name "\n")
@@ -271,13 +266,11 @@ regular expression search was done with `string-match'."
     ("nbsd"	"NetBSD"	nil 0)))
 
 (setq auto-mode-alist
-      (append '(("\\.S$"	 . asm-mode)
-		("\\.h"		 . c++-mode)
+      (append '(("\\.h$"	 . c++-mode)		;i do mostly c++
+		("\\.S$"	 . asm-mode)
 		("\\.exp$"	 . tcl-mode)		;Expect
 		("\\.ps$"	 . postscript-mode)
 		("\\.[pP][Llm]$" . perl-mode)
-		("\\.s?html?$"	 . html-helper-mode)
-		("\\.tml$"	 . html-helper-mode)
 		("\\.[1-8]$"	 . text-mode)
 		("GNUmakerules\\(.in\\)?\\'" . makefile-mode))
 	      auto-mode-alist))
@@ -287,15 +280,6 @@ regular expression search was done with `string-match'."
 					   ("tkperl" . perl-mode)
 					   ("wish4.0" . tcl-mode))
 					 interpreter-mode-alist)))
-
-;; Use the recycle 3-arrow logo as a cursor when GC'ing.  This
-;; probably works only in XEmacs.
-(if (and (featurep 'xpm) using-x11)
-    (let ((file (expand-file-name "recycle.xpm" (~/ "bitmaps"))))
-      (if (condition-case error
-	      (make-cursor file)
-	    (error nil))
-	  (setq x-gc-pointer-shape file))))
 
 ;; Enable some things.
 (map-list 'put
@@ -339,6 +323,7 @@ regular expression search was done with `string-match'."
     (Helper-help "helper" "Provide help.")
 
     (align-regexp "align-regexp" "Align text according to regexp." t)
+    (dired-jump "dired-x" "Jump to dired buffer corresponding to current buffer." t)
     (show-faces "show-faces" "Shows the faces." t)
     (us "usr-src" "/usr/src" t)
     (turn-on-fast-lock "fast-lock" "Turn on Fast Lock mode.")
@@ -357,11 +342,34 @@ regular expression search was done with `string-match'."
 ;    (mc-install-read-mode "mailcrypt" nil t)
     (lcvs-examine "lcvs" nil t)
     (lsvn-status "lsvn" nil t)
+    (lgit-status "lgit" nil t)
     (fume-add-menubar-entry "func-menu" nil t)
     (run-scheme "cmuscheme" "Run an inferior scheme" t)
 ;    (gdb "gud" "GUD/gdb" t)
     (ffcli "ffcli" "Run ffcli as an inferior process" t)
+    (cua-toggle-rectangle-mark "cua-rect" "cua rectangles" t)
+    (mu4e "mu4e" "MU for Emacs" t)
+    (mu4e-compose-new "mu4e" "Send mail using mu4e" t)
     ))
+
+;; cua mode - trying out the rectangle support
+;; (it might rebind a bunch of other crap, have to see)
+;;
+;; XXX/lomew this does break something with the region, if i M-h to
+;; mark a paragraph and then move, the region goes away.  doing
+;; (cua-mode -1) makes the prob go away.  This is because the
+;; pre-command hook sets deactivate-region.
+(when nil ;(fboundp 'cua-mode)
+  (setq cua-enable-cua-keys nil)	;don't want C-{z,x,c,v}
+  (setq cua-delete-selection nil)	;don't want typing to kill the region
+  (cua-mode 1)
+  ;; Make C-SPC toggle between rectangles and regions
+  (global-set-key (kbd "C-SPC")
+		  '(lambda (&optional arg)
+		     (interactive "P")
+		     (if (or (not mark-active) arg)
+			 (cua-set-mark arg)
+		       (cua-toggle-rectangle-mark)))))
 
 ;; XEmacs should have fume
 (when running-xemacs
@@ -377,27 +385,8 @@ regular expression search was done with `string-match'."
 	      (run-latex "run-latex" "For running latex in emacs." t))))
 
 (cond (running-fsf
-       ;; Get rid of the default c-mode to make way for the better one.
-       (fmakunbound 'c-mode)
-       (fmakunbound 'c++-mode)
-       (makunbound 'c-mode-map)
-       (makunbound 'c++-mode-map)
-       (makunbound 'c-style-alist)
-       (autoload 'c++-mode "cc-mode" "Major mode for editing C++ code" t)
-       (autoload 'c-mode "cc-mode" "Major mode for editing C code" t)
-
        (autoload 'hyper-apropos "hyper-apropos" "Better apropos stuff." t)
        ))
-
-;; Turn off mail checking if running X, since I have a special
-;; whiz-bang biff.  Also, I don't want my emacs to hang when sunset.cs
-;; goes down.  reportmail echoes subject lines in the minibuffer.
-(if using-x11
-    (setq dt-spool-file (~/ ".bogus")
-	  display-time-mail-file dt-spool-file)
-  (load "reportmail" t t))
-(if (featurep 'reportmail)
-    (setq dt-mail-ring-bell t))
 
 ;; More descriptive names than foo<2>
 (load "uniquify" t t)
@@ -416,6 +405,12 @@ regular expression search was done with `string-match'."
 ;; like M-x f-l-f-b for M-x font-lock-fontify-buffer.
 ;; Try "complete" first, then try "completer".  They are similar but
 ;; I like complete for now because it can do *.c and <stdio.h>
+;;
+;; Emacs 24.1 says complete.el is obsolete and recommends the in-built
+;; stuff.  This is close but I like the part in complete.el where -
+;; and _ can match each other, like "e-m" matching "edge_manager".
+;; However there is some bug where a partial match leaves point in the
+;; wrong place in the minibuffer.
 (load "complete" t t)
 (if (not (featurep 'complete))
     (load "completer" t t))
@@ -432,7 +427,8 @@ regular expression search was done with `string-match'."
 (when (featurep 'filladapt)
   (setq filladapt-mode-line-string "")	;I know it is always on,
 					;don't waste precious mode-line space
-  (setq-default filladapt-mode t))
+  (setq-default filladapt-mode t)
+  )	;XXX/lomew this is incompatible with mu4e
 
 ;; Highlight matching parens.
 ;; We need this 19 v. 20 thing since defcustom is different and stuff.
@@ -474,6 +470,11 @@ regular expression search was done with `string-match'."
       (delete ".log" completion-ignored-extensions))
 (setq completion-ignored-extensions
       (delete ".diff" completion-ignored-extensions))
+;; I sometimes name git repositories foo.git
+;; XXX/lomew this doesn't seem to work
+(setq completion-ignored-extensions
+      (delete ".git/" completion-ignored-extensions))
+(setq revert-without-query (cons "/work/va/" revert-without-query))
 
 ;; No, thanks.
 (if (fboundp 'turn-off-pending-delete)
@@ -483,6 +484,7 @@ regular expression search was done with `string-match'."
 ;; paths like /r:lomew@inkdev.inktomi.com:/home/lomew
 ;; (NOTE: ftpsshd is a better solution)
 ;; have to (require 'tramp)
+;; Apr 16, 2015 see sshfs
 (setq tramp-default-method "scp")
 (setq tramp-verbose 10)
 (setq tramp-auto-save-directory (~/ ".tramp-autosave/"))
@@ -514,11 +516,59 @@ regular expression search was done with `string-match'."
   ;; Show current function in the first line of the window.
   (global-semantic-stickyfunc-mode 1))
 
+;; Select buffer based on partial substrings
+(if nil
+(when (fboundp 'iswitchb-mode)
+  (iswitchb-mode 1)
+  (setq iswitchb-max-to-show 5)
+  (setq iswitchb-buffer-ignore (append '("\\*Completions\\*")
+				       iswitchb-buffer-ignore)))
+)
+
+;; Shows a little ruler where the fill-column or fci-rule-column is.
+;; fci-mode turns it on
+(load "fill-column-indicator" t t)
+(when (featurep 'fill-column-indicator)
+  (setq fci-rule-use-dashes t)
+  (setq fci-rule-width 1)
+  (setq fci-dash-pattern 0.5)
+  ;; ignore `fill-column', buffers can set too
+  (setq-default fci-rule-column 80)
+  ;; don't turn on `truncate-lines'
+  (setq fci-handle-truncate-lines nil)
+  (add-hook 'c-mode-common-hook 'turn-on-fci-mode)
+  (add-hook 'diff-mode-hook 'turn-on-fci-mode)
+  (add-hook 'lgit-commit-mode-hook 'turn-on-fci-mode))
+
+(load "whitespace" t t)
+(when (featurep 'whitespace)
+  (setq whitespace-global-modes '(diff-mode))
+  ;; doesn't seem to work
+  (setq whitespace-style '(face tabs trailing))
+  (add-hook 'diff-mode-hook 'whitespace-turn-on))
+
+(setq
+ mu4e-mu-binary			"/usr/local/bin/mu"
+ mu4e-maildir			"~/Mail")
+
+(add-to-list 'load-path (~/ "emacs/yaml-mode") 'append)
+(add-to-list 'auto-mode-alist '("\\.ya?ml$" . yaml-mode) 'append)
+(autoload 'yaml-mode "yaml-mode" "YAML mode" t)
+
 
 ;;;=====================================================================
 ;;; Random functions, macros, and the like.  These are user functions,
 ;;; the programmer functions should go somewhere else.
 ;;;=====================================================================
+
+(defun full-screen ()
+  (interactive)
+  (toggle-frame-maximized))
+
+(defun clear ()
+  (interactive)
+  (switch-to-buffer "*scratch*")
+  (delete-other-windows))
 
 (defun set-windows-font ()
   "Pops up a dialog to change the default font."
@@ -609,11 +659,13 @@ regular expression search was done with `string-match'."
 (defun sport-font-lock ()
   "XXX/BRR this is a hack."
   (interactive)
+  (make-variable-buffer-local 'font-lock-keywords)
   (setq font-lock-keywords
 	'(
-	  ("^\\[[^]]+\\]" . font-lock-constant-face)
-	  ("^\\[[^]]+WARN\\]\\(.*\\)" 1 font-lock-keyword-face)
-	  ("^\\[[^]]+ERR\\]\\(.*\\)" 1 font-lock-warning-face)))
+	  ("\\[[^]]+\\(DEBUG\\|INFO\\|NOTICE\\|NOTE\\)\\]" . font-lock-constant-face)
+	  ("\\[[^]]+WARN\\(ING\\)?\\]\\(.*\\)" 0 font-lock-keyword-face)
+	  ("\\[[^]]+\\(ERR\\|CRIT\\|ALERT\\|EMERG\\)\\]\\(.*\\)"
+	   0 font-lock-warning-face)))
 
 ;	  ("^\\[.*warning\\].*" . font-lock-keyword-face)
 ;	  ("^\\[.*error\\].*" . bold)
@@ -749,6 +801,9 @@ at each line."
     ;; Insert the same width of whitespace that we had before.
     (indent-to (+ (current-column) whitespace))))
 
+;; XXX/lomew need to define grope-mode in terms of `define-compilation-mode'.
+;; Emacs 24.5 at least changes the `compilation-directory-matcher' so
+;; this doesn't work properly.
 (autoload 'compile-internal "compile" nil)
 (defun grope (sym)
   (interactive (list (read-string "Grope for: " (current-word))))
@@ -757,6 +812,11 @@ at each line."
 			 (lambda (m) "*grope*"))
     (compile-internal (concat "grope " sym) "No more grope hits" "grope"
 		      nil grep-regexp-alist)))
+(defun my-grep-mode-hook ()
+  (setq compilation-directory-matcher
+	'("\\(?:Entering\\|Leavin\\(g\\)\\) directory [`']\\(.+\\)'$"
+	  (2 . 1))))
+(add-hook 'grep-mode-hook 'my-grep-mode-hook)
 
 (defun vm-this-frame ()
   (interactive)
@@ -795,7 +855,8 @@ at each line."
 (defun unwide ()
   (interactive)
   (set-frame-width nil 81))
-(when (and running-xemacs using-x11)
+
+(when running-xemacs
   ;; hack gnuclient-created frames to be small
   (setq gnuserv-visit-hook (lambda ()
 			     (set-frame-width nil 81)
@@ -897,6 +958,7 @@ and used if `dup-prev-line-and-inc' is called repeatedly."
   (increment-in-region (point) (progn (end-of-line) (point)) dpl-howmuch)
   (newline))
 
+;; XXX/lomew might not be needed any more see recenter-redisplay, 
 (defadvice recenter (before just-recenter activate)
   "Reverses sense of C-u and no args behavior for interactive use.
 In other words, you have to give it a prefix arg to get it to repaint."
@@ -1049,30 +1111,34 @@ backward\), otherwise insert %."
 						 'backward)))
 	(t (self-insert-command arg))))
 
+;; this used to just do a recenter of 0
 (defun slide-this-line-to-top-of-window ()
-  "Self documenting."
+  "Similar to `recenter-top-bottom' but starts with `top`."
   (interactive)
-  (recenter 0))
+  (let ((recenter-positions '(top middle bottom)))
+    (recenter-top-bottom)))
 
-(defun delete-trailing-whitespace ()
-  "Deletes auxiliary whitespace at the end of all lines in this buffer."
-  (interactive)
-  (let ((count 0))
-    (save-excursion
-      (goto-char (point-min))
-      (while (re-search-forward "[\t ]+$" nil t)
-	(if (save-match-data
-	      (save-excursion
-		(prog2
-		    (beginning-of-line)
-		    (looking-at "-- ")		;don't munge signatures
-		  (end-of-line))))
-	      nil
-	  (replace-match "" nil t)
-	  (setq count (1+ count))))
-      (message (if (zerop count)
-		   "didn't find any"
-		 (format "Fixed %d lines" count))))))
+;; This is available in emacs 21.3 at least
+(if (not (fboundp 'delete-trailing-whitespace))
+    (defun delete-trailing-whitespace ()
+      "Deletes auxiliary whitespace at the end of all lines in this buffer."
+      (interactive)
+      (let ((count 0))
+	(save-excursion
+	  (goto-char (point-min))
+	  (while (re-search-forward "[\t ]+$" nil t)
+	    (if (save-match-data
+		  (save-excursion
+		    (prog2
+			(beginning-of-line)
+			(looking-at "-- ") ;don't munge signatures
+		      (end-of-line))))
+		nil
+	      (replace-match "" nil t)
+	      (setq count (1+ count))))
+	  (message (if (zerop count)
+		       "didn't find any"
+		     (format "Fixed %d lines" count)))))))
 
 (defun dont-make-backups ()
   "Makes saves not make ~ backups.
@@ -1167,6 +1233,7 @@ If col is negative, remove backslashes."
 	(insert "\\")
 	(forward-line 1)))))
 
+;;; XXX/lomew seems to be not necessary anymore
 (defun fix-backspace ()
   "Toggle C-h be help or backspace.  Useful when running emacs in TTY mode."
   (interactive)
@@ -1234,6 +1301,22 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
       (exchange-point-and-mark)
       (exchange-point-and-mark)))
 
+(defun va-team-status ()
+  (interactive)
+  (goto-char (point-min))
+  (forward-line)
+  (insert "\n")
+  (the-date)
+  (insert "\n\n" 
+	  "   * This Week (completed/in progress)\n"
+	  "      * Customer issues\n"
+	  "      * Bugs\n"
+	  "      * Feature work\n"
+	  "      * Other\n"
+	  "   * Next Week (planned)\n"
+          "\n")
+  (long-comment ?-))
+
 
 ;;;=====================================================================
 ;;; Key bindings.  This must come after the functions are defined.
@@ -1246,7 +1329,7 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
   (list
    (list "\C-m"		'newline-and-indent)	;usu `newline'
    (list "\M-%"		'query-replace-regexp)	;usu `query-replace'
-   (list "\M-g"		'goto-line)		;usu undef?
+   (list "\M-g"		'goto-line)		;usu prefix for some goto cmds
    (list "\M-n"		'forward-page)		;usu undef?
    (list "\M-p"		'backward-page)		;usu undef?
    (list "\C-cn"	'dup-prev-line-and-inc)
@@ -1261,8 +1344,7 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
    (list "\M-`"		'next-error)		;usu undef
    (list "\M-V"		'scroll-other-window-down); default in xemacs
 
-   (list "\C-cl"	'fume-list-functions)
-   (list "\C-cg"	'fume-prompt-function-goto)
+   (list "\C-cg"	'grope)
 
    (list "\C-xnp"	'narrow-to-page)
    (list "\C-xnr"	'narrow-to-region)
@@ -1288,19 +1370,137 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 
    (list "\C-cb"	'bookmark-map)
    (list "\C-cx"	'lsvn-status)
+   (list "\C-cX"	'lgit-status)
+   (list "\C-cC"	(lambda() (interactive)
+			  (pop-to-buffer "*compilation*")))
    (list "\C-cr"	'rename-buffer-or-uniquely)
    (list "\C-c*"	'my-isearch-for-current-word)
    (list "\C-c#"	'erase-buffer)
    (list "\C-ca"	'org-agenda)
-   (list "\C-cR"	'org-remember)
+;   (list "\C-cR"	'org-remember)
+   (list "\C-cR"	'org-capture)
 
    (list "\C-k"		'kill-region-or-line) ;usu just kill-line
    (list "\M-#"		'make-side-by-side)
    (list "\C-c#"	'duplicate-window)
 
-   (list "\C-xm"	'vm-mail-other-frame)
-   (list "\C-x4m"	'vm-mail-other-window)
-   (list "\C-x5m"	'vm-mail-other-frame)))
+   ;(list "\C-xm"	'vm-mail-other-frame)
+   (list "\C-xm"	'mu4e-compose-new)
+   ;(list "\C-x4m"	'vm-mail-other-window)
+   ;(list "\C-x5m"	'vm-mail-other-frame)
+
+   (list "\C-xO" 'other-frame)		;usually the awkward C-x5o
+   ))
+
+(when (fboundp 'org-mode)
+  ;; see also visual-line-mode, visual word wrapping
+  (setq visual-line-fringe-indicators '(nil right-curly-arrow))
+
+  ;; for habit tracking
+  (eval-after-load "org.el"
+    (lambda ()
+      (add-to-list 'org-modules 'org-habit)))
+
+  ;; part of clean-view setting
+  (setq org-hide-leading-stars  t)
+  (setq org-startup-indented t)
+
+  ;; I don't often want sub/super scripting.  But when I do this allows it via x_{i}
+  (setq org-use-sub-superscripts "{}")
+
+  (setq org-agenda-files (list (~/ "work/org") (~/ "Documents/org")))
+
+  ;; remember-mode integration
+  ;; in org v8 no more remember, called capture now
+;  (org-remember-insinuate)
+  (setq org-directory (~/ "work/org"))
+  (setq org-default-notes-file (~/ "work/org/notes.org"))
+;  (setq org-remember-templates
+;	'(("Todo" ?t "* TODO %?\n" "~/work/org/todo.org" "incoming")
+;	  ("Journal" ?j "* REPORT %u %?\n" "~/work/org/journal-r.org" "current")
+;	  ("Home Diary" ?d "* %u %?\n" "/volumes/Secure Disk/docs/org/journal.org")
+;	  ("Home Todo" ?h "* TODO %?\n" "~/Documents/org/home.org" "incoming")))
+  (setq org-capture-templates
+	'(("t" "Todo" entry
+	   (file+headline "~/work/org/todo.org" "incoming")
+	   "* TODO %?\n" :prepend t)
+	  ("T" "Todo with mail link" entry
+	   (file+headline "~/work/org/todo.org" "incoming")
+	   "* TODO %?\n%(org-mac-outlook-message-get-links \"s\")\n" :prepend t)
+	  ("j" "Journal" entry
+	   (file+headline "~/work/org/journal-r.org" "current")
+	   "* REPORT %u %?\n" :prepend t)
+	  ("d" "Home Diary" entry
+	   (file+headline "/volumes/Secure Disk/docs/org/journal.org" "")
+	   "* %u %?\n" :prepend t)
+	  ("h" "Home Todo" entry
+	   (file+headline "~/Documents/org/home.org" "incoming")
+	   "* TODO %?\n" :prepend t)))
+
+  ;; org-mac-link, for grabbing links to outlook msgs and other things
+  (setq org-mac-grab-Mail-app-p nil
+	org-mac-grab-Safari-app-p nil)
+  (load "org-mac-link" t t)
+
+
+  (setq org-special-ctrl-a/e	t)	;skip tags and stars
+  (setq org-cycle-global-at-bob	t)	;TAB at BOB will global-cycle
+  
+  ;; add a timestamp when finishing an item, intention is to be able
+  ;; to gather these up for reports.
+  ;; see #+STARTUP: logdone
+  ;;(setq org-log-done 'time)
+
+  ;; for refiling
+  (setq org-reverse-note-order t)
+
+  ;; Require sub-TODOs and checkboxes to be complete before the parent
+  ;; can be marked done
+  (setq org-enforce-todo-dependencies t)
+  (setq org-enforce-todo-checkbox-dependencies t)
+
+  ;; link [[bug:1234]]
+  (setq org-link-abbrev-alist
+	'(("bug" . "http://bugzilla.nbttech.com/bugzilla/show_bug.cgi?id=%s")
+	  ("Bug" . "http://bugzilla.nbttech.com/bugzilla/show_bug.cgi?id=%s")
+	  ("case" . "http://eng-ops.lab.nbttech.com/viewcase.php?case=%s")
+	  ("storewiki" . "https://storewiki.lab.nbttech.com/bin/view/Main/%s")
+	  ("twiki" . "https://twiki.nbttech.com/twiki/bin/view/NBT/%s")
+	  ("review" . "http://review.lab.nbttech.com/r/%s")))
+
+  (setq org-agenda-prefix-format
+	'((agenda  . "  %-12:c%?-12t% s")
+	  (timeline  . "  % s")
+	  (todo  . "  %-12:c")
+;	  (tags  . "  %-12:c%-8T")
+	  (tags  . "  %-12:c")
+	  (search . "  %-12:c")))
+
+  ;; Custom agenda view, show today and upcoming on {C-c a w} for work
+  ;; and {C-c a h} for personal
+  (setq org-agenda-custom-commands
+	'(("r" "Items for weekly report"
+	   ((todo "REPORT")))
+	  ("w" "Work tasks"
+	   ((tags-todo "+today"
+		       (
+			(org-agenda-hide-tags-regexp "today\\|upcoming")
+			;(org-agenda-remove-tags 'prefix)
+			;(org-agenda-show-inherited-tags nil)
+			))
+	    (tags-todo "+upcoming-today"
+		       (
+			(org-agenda-hide-tags-regexp "upcoming")
+			;(org-agenda-remove-tags 'prefix)
+			;(org-agenda-show-inherited-tags nil)
+			)))
+	   ((org-agenda-files (list (~/ "work/org")))))
+	  ("h" "Home tasks"
+	   ((tags-todo "today"
+		       ((org-agenda-hide-tags-regexp "today")))
+	    (tags-todo "upcoming"
+		       ((org-agenda-hide-tags-regexp "upcoming"))))
+	   ((org-agenda-files (list (~/ "Documents/org"))))))))
 
 ;; If ibuffer is available, use it, otherwise fall back to electric buffer list.
 (if (fboundp 'ibuffer)
@@ -1346,10 +1546,6 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
        (global-set-key [C-tab] 'other-window) ;if using-x11?
        (global-set-key [?\C-x?\C-j] 'dired-jump)
        ))
-
-(if using-tty
-    (fix-backspace)
-  (put 'suspend-or-iconify-emacs 'disabled t))
 
 
 ;;;=====================================================================
@@ -1403,7 +1599,7 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
   '(("sic"	"static"		nil 0)
 ;;    ("pf"	"printf\(" 		nil 0)
     ("pr"	"fprintf\(stderr,"	nil 0)
-    ("py"	"fprintf\(yyout,"	nil 0)
+;;    ("py"	"fprintf\(yyout,"	nil 0)
     ("def"	"define"	 	hack-cpp-directive 0)
     ("inc"	"include"	 	hack-cpp-directive 0)
     ("file"	"FILE"		 	hack-cpp-macro 0)
@@ -1500,7 +1696,11 @@ This is dumb and needs to be fixed."
   (goto-char (search-backward "Class: "))
   (end-of-line))
 
-(defun find-related-header-or-source ()
+;; XXX/lomew go check out ff-find-other-file
+(if (fboundp 'cl-find-if)
+    ;; This got "namespaced" into cl-* in 24.3
+    (defalias 'find-if 'cl-find-if))
+(defun find-related-header-or-source (&optional other-window)
   "Switch between the foo.cc and foo.h files.
 Has a notion of preferred pairings.  First try to find the preferred
 pair for this file.  If that doesn't exist then try the other suffixes.
@@ -1514,6 +1714,9 @@ pair."
 		     (".cxx" . ".hxx")
 		     (".CC"  . ".HH")
 		     (".c++" . ".h++")))
+	(find-fun (if other-window
+		      (function find-file-other-window)
+		    (function find-file)))
 	(find-related '(lambda (base preferred-ext other-exts)
 			 ;; find-if from cl-extra.el
 			 (let ((match (find-if '(lambda (e)
@@ -1535,8 +1738,36 @@ pair."
 	(if other
 	    (if (or (file-exists-p other)
 		    (y-or-n-p (format "Create %s? " other)))
-		(find-file other))
+		(funcall find-fun other))
 	  (error "cannot determine related file"))))))
+
+(defun switch-c-dot-and-arrow ()
+  "Toggle . and -> structure accessors."
+  (interactive)
+  (cond ((looking-at "\\.")
+	 (delete-char 1)
+	 (insert "->")
+	 (forward-char -2))
+	((looking-at "->")
+	 (delete-char 2)
+	 (insert ".")
+	 (forward-char -1))
+	((and (looking-at ">")
+	      (not (bobp))
+	      (save-excursion
+		(forward-char -1)
+		(looking-at "->")))
+	 (forward-char -1)
+	 (switch-c-dot-and-arrow))))
+
+(defun c-set-my-page-delimiter ()
+  ;; Want flexible page-delimiter since beloved ^Ls got punted.  Look
+  ;; for long comments but avoid doxygen comments.
+  ;;
+  ;; (In it's own fn so can tinker with it easily.)
+  (interactive)
+  (make-local-variable 'page-delimiter)
+  (setq page-delimiter "^\\(\\|//[-=/*]\\{3\\}\\|/\\*[-=*]+\\{2\\}\\)"))
 
 ;; Hook used by C and C++ and Java mode
 (add-hook* 'c-mode-common-hook
@@ -1550,6 +1781,8 @@ pair."
 	comment-column		my-comment-column
 	c-electric-pound-behavior	'(alignleft)
 	c-backslash-column	64)
+
+  (c-set-my-page-delimiter)
 
   ;; Hack for cs506 since Alyosha likes 2col indent
   ;;(if (and buffer-file-truename
@@ -1570,6 +1803,11 @@ pair."
   ;; XXX/lomew note that keybindings can go in c-initialization-hook
   (define-key (current-local-map) "\C-c\C-c" 'compile)
   (define-key (current-local-map) "\C-co" 'find-related-header-or-source)
+  (define-key (current-local-map) "\C-cO" (lambda ()
+					    (interactive)
+					    (find-related-header-or-source t)))
+  ;; To change foo.bar to foo->bar
+  (define-key (current-local-map) "\C-c." 'switch-c-dot-and-arrow)
   ;; Usually i have this as newline-and-indent, but this adds some stuff
   (define-key (current-local-map) "\C-m" 'c-context-line-break)
   ;; This normaly skips #else.  See also if-jump.
@@ -1598,7 +1836,8 @@ pair."
   (let ((insert-copyright nil))
     (when (zerop (buffer-size))
       ;; Maybe we want a copyright.
-      (if (string-match "oskit\\|fluke\\|mom" default-directory)
+      (if (and default-directory
+	       (string-match "oskit\\|fluke\\|mom" default-directory))
 	  (setq insert-copyright "HOLD/n/fast/usr/lsrc/flux/doc/copyright.c")))
 
     ;; This is so this file will work in absence of once-only-header.
@@ -1628,6 +1867,11 @@ pair."
   ;; filladapt doesn't cooperate with add-log.el's shenanigans.
   (turn-off-filladapt-mode)
 
+  ;; change-log mode tends to add useless whitespace, and recent emacs
+  ;; has show-trailing-whitespace on and shows them as red.
+  ;; We add it locally for this buffer.
+  (add-hook 'before-save-hook 'delete-trailing-whitespace nil t)
+
   (turn-on-auto-fill))
 
 ;;;---------------------------------------------------------------------
@@ -1643,6 +1887,76 @@ pair."
   (define-key comint-mode-map "\M-p" 'comint-previous-matching-input-from-input)
   (define-key comint-mode-map "\M-n" 'comint-next-matching-input-from-input)
   (define-key comint-mode-map "\C-a" 'comint-bol)) ;usu beginning-of-line
+
+;;;---------------------------------------------------------------------
+;;; Diff-mode
+
+(defun diff-hunk-mark ()
+  "Put point at beginning of this hunk, mark at end.
+The hunk marked is the one that contains point or follows point.
+
+Interactively, if this command is repeated
+or (in Transient Mark mode) if the mark is active,
+it marks the next hunk after the ones already marked."
+  (interactive)
+  (cond ((or (and (eq last-command this-command) (mark t))
+	     (and transient-mark-mode mark-active))
+	 (set-mark
+	  (save-excursion
+	    (goto-char (mark))
+	    (diff-end-of-hunk)
+	    (point))))
+	(t
+	 (let ((beg (save-excursion (diff-beginning-of-hunk 'try-harder)
+				    (point))))
+	   (diff-end-of-hunk)
+	   (push-mark nil t t)
+	   (goto-char beg)))))
+
+(defun diff-hunk-boundaries (&optional arg)
+  "Return the boundaries of the current hunk.
+If the prefix ARG is given, return the boundaries of the current file instead."
+  (interactive "P")
+  (save-excursion
+    (cons (progn (if arg (diff-beginning-of-file) (diff-beginning-of-hunk 'try-harder))
+		 (point))
+	  (progn (if arg (diff-end-of-file) (diff-end-of-hunk))
+		 (point)))))
+
+(defun diff-hunk-mark-2 (&optional arg)
+  (interactive "P")
+  (let ((r (diff-hunk-boundaries arg)))
+    (goto-char (cdr r))
+    (push-mark nil t t)
+    (goto-char (car r))))
+
+(defun my-diff-mode-hook ()
+  (when (featurep 'whitespace)
+    (setq whitespace-style '(face tabs trailing))    
+    (whitespace-mode 1))
+
+  ;; It sets this to quit-window, which I don't want.
+  (define-key (current-local-map) "\M-q" 'fill-paragraph)
+
+  (define-key (current-local-map) "\M-h" 'diff-hunk-mark)
+
+  ;; Color the diffs a bit
+  ;; XXX/lomew Need to tweak a bit with new emacs 24.3 color changes
+  (set-face-bold-p 'diff-function t)
+
+  (set-face-foreground 'diff-added "blue1")
+;;(set-face-background 'diff-added "#e5e5ff")
+  (set-face-background 'diff-added (face-background 'default))
+  (set-face-background 'diff-refine-added "#c5c5ff")
+
+  (set-face-foreground 'diff-removed "firebrick")
+;;(set-face-background 'diff-removed "#ffe5e5")
+  (set-face-background 'diff-removed (face-background 'default))
+  (set-face-background 'diff-refine-removed "#ffc5c5")
+
+  ;; make this a little bigger since diff puts +/- on the front
+  (setq fci-rule-column 81))
+(add-hook 'diff-mode-hook 'my-diff-mode-hook)
 
 ;;;---------------------------------------------------------------------
 ;;; Dired
@@ -1708,87 +2022,90 @@ pair."
 ;;;---------------------------------------------------------------------
 ;;; Font-lock.  There really needs to be a font-lock-load-hook.
 
-(defun turn-on-font-lock-but-not-if-vc-diff ()
-  "Work around bug in XEmacs `diff-mode' advising of `vc-backend-diff'.
-I sent in a patch..."
-  (if (and running-xemacs
-	   (string-equal (buffer-name) "*vc-diff*"))
-      nil
-    (turn-on-font-lock)))
+;; XXX/lomew remove all this.  modern emacs has it on by default in
+;; all modes that support it.
 
-(when can-fontify
-  (require 'font-lock)
-
-  ;; FSFmacs pre 19.29 font-lock.el doesn't have this
-  (or (fboundp 'turn-on-font-lock)
-      (defun turn-on-font-lock ()
-	(font-lock-mode 1)))
-
-  ;; lazy-lock is obsolete in emacs 22.1, jit-lock is on by default
-  ;; had some bugs with xemacs 21.4.15 (weird pauses with
-  ;; electric buffer list but seems to work now?)
-  (if (or (not running-fsf)
-	  (< emacs-major-version 22))
-      (add-hook 'font-lock-mode-hook 'turn-on-lazy-lock))
-
-  (add-hook 'emacs-lisp-mode-hook 'turn-on-font-lock)
-  (add-hook 'lisp-mode-hook       'turn-on-font-lock)
-  (add-hook 'scheme-mode-hook     'turn-on-font-lock)
-  (add-hook 'c-mode-hook          'turn-on-font-lock)
-  (add-hook 'c++-mode-hook        'turn-on-font-lock)
-  (add-hook 'perl-mode-hook       'turn-on-font-lock)
-  (add-hook 'dired-mode-hook      'turn-on-font-lock)
-  (add-hook 'mail-mode-hook       'turn-on-font-lock)
-  (add-hook 'LaTeX-mode-hook      'turn-on-font-lock)
-  (add-hook 'tcl-mode-hook	  'turn-on-font-lock)
-  (add-hook 'java-mode-hook	  'turn-on-font-lock)
-  (add-hook 'lcvs-mode-hook	  'turn-on-font-lock)
-  (add-hook 'lsvn-mode-hook	  'turn-on-font-lock)
-  (add-hook 'zenirc-mode-hook	  'turn-on-font-lock)
-  (add-hook 'html-helper-mode-hook 'turn-on-font-lock)
-  (add-hook 'xml-mode-hook	  'turn-on-font-lock)
-  (add-hook 'diff-mode-hook	  'turn-on-font-lock-but-not-if-vc-diff)
-
-  ;; Use more extensive highlighting in Lisp and C modes.  Note:
-  ;; XEmacs has `font-lock-use-maximal-decoration' but we use the
-  ;; following since Emacs doesn't have that.
-  (setq lisp-font-lock-keywords lisp-font-lock-keywords-2)
-  (if (boundp 'c-font-lock-keywords-2)
-      (setq c-font-lock-keywords c-font-lock-keywords-2))
-  (if (boundp 'c++-font-lock-keywords-2)
-      (setq c++-font-lock-keywords c++-font-lock-keywords-2))
-  (if (boundp 'java-font-lock-keywords-2)
-      (setq java-font-lock-keywords java-font-lock-keywords-2))
-
-  ;; The font-lock-*-faces are vars in pre 19.29 Emacs, faces in
-  ;; XEmacs...
-  (cond
-   (running-xemacs
-    ;; See .Xresources too
-    (setq highlight-headers-regexp "^\\(Subject\\|From\\)[ \t]*:")
-    (load "mail-font-extra" t t))	;my mail stuff for mail-mode
-
-   ((and running-fsf
-	 (= emacs-major-version 19)
-	 (< emacs-minor-version 29))
-    ;; Pre 19.29 has a shitty font-lock.el, so we kludge around it.
-    (mapcar (function (lambda (sym)
-			(copy-face (symbol-value sym) sym)
-			(set sym sym)))
-	    '(font-lock-comment-face
-	      font-lock-doc-string-face
-	      font-lock-string-face
-	      font-lock-function-name-face
-	      font-lock-keyword-face
-	      font-lock-type-face))
-    (set-face-foreground font-lock-comment-face "firebrick")
-    (set-face-foreground font-lock-string-face "mediumforestgreen")
-    (set-face-foreground font-lock-function-name-face "blue")
-    (set-face-foreground font-lock-keyword-face "royalblue")
-    (make-face-unitalic font-lock-string-face)
-    (set-face-underline-p font-lock-string-face nil)
-    )))
-
+;-(defun turn-on-font-lock-but-not-if-vc-diff ()
+;-  "Work around bug in XEmacs `diff-mode' advising of `vc-backend-diff'.
+;-I sent in a patch..."
+;-  (if (and running-xemacs
+;-	   (string-equal (buffer-name) "*vc-diff*"))
+;-      nil
+;-    (turn-on-font-lock)))
+;-
+;-(when can-fontify
+;-  (require 'font-lock)
+;-
+;-  ;; FSFmacs pre 19.29 font-lock.el doesn't have this
+;-  (or (fboundp 'turn-on-font-lock)
+;-      (defun turn-on-font-lock ()
+;-	(font-lock-mode 1)))
+;-
+;-  ;; lazy-lock is obsolete in emacs 22.1, jit-lock is on by default
+;-  ;; had some bugs with xemacs 21.4.15 (weird pauses with
+;-  ;; electric buffer list but seems to work now?)
+;-  (if (or (not running-fsf)
+;-	  (< emacs-major-version 22))
+;-      (add-hook 'font-lock-mode-hook 'turn-on-lazy-lock))
+;-
+;-  (add-hook 'emacs-lisp-mode-hook 'turn-on-font-lock)
+;-  (add-hook 'lisp-mode-hook       'turn-on-font-lock)
+;-  (add-hook 'scheme-mode-hook     'turn-on-font-lock)
+;-  (add-hook 'c-mode-hook          'turn-on-font-lock)
+;-  (add-hook 'c++-mode-hook        'turn-on-font-lock)
+;-  (add-hook 'perl-mode-hook       'turn-on-font-lock)
+;-  (add-hook 'dired-mode-hook      'turn-on-font-lock)
+;-  (add-hook 'mail-mode-hook       'turn-on-font-lock)
+;-  (add-hook 'LaTeX-mode-hook      'turn-on-font-lock)
+;-  (add-hook 'tcl-mode-hook	  'turn-on-font-lock)
+;-  (add-hook 'java-mode-hook	  'turn-on-font-lock)
+;-  (add-hook 'lcvs-mode-hook	  'turn-on-font-lock)
+;-  (add-hook 'lsvn-mode-hook	  'turn-on-font-lock)
+;-  (add-hook 'zenirc-mode-hook	  'turn-on-font-lock)
+;-  (add-hook 'html-helper-mode-hook 'turn-on-font-lock)
+;-  (add-hook 'xml-mode-hook	  'turn-on-font-lock)
+;-  (add-hook 'diff-mode-hook	  'turn-on-font-lock-but-not-if-vc-diff)
+;-
+;-  ;; Use more extensive highlighting in Lisp and C modes.  Note:
+;-  ;; XEmacs has `font-lock-use-maximal-decoration' but we use the
+;-  ;; following since Emacs doesn't have that.
+;-  (setq lisp-font-lock-keywords lisp-font-lock-keywords-2)
+;-  (if (boundp 'c-font-lock-keywords-2)
+;-      (setq c-font-lock-keywords c-font-lock-keywords-2))
+;-  (if (boundp 'c++-font-lock-keywords-2)
+;-      (setq c++-font-lock-keywords c++-font-lock-keywords-2))
+;-  (if (boundp 'java-font-lock-keywords-2)
+;-      (setq java-font-lock-keywords java-font-lock-keywords-2))
+;-
+;-  ;; The font-lock-*-faces are vars in pre 19.29 Emacs, faces in
+;-  ;; XEmacs...
+;-  (cond
+;-   (running-xemacs
+;-    ;; See .Xresources too
+;-    (setq highlight-headers-regexp "^\\(Subject\\|From\\)[ \t]*:")
+;-    (load "mail-font-extra" t t))	;my mail stuff for mail-mode
+;-
+;-   ((and running-fsf
+;-	 (= emacs-major-version 19)
+;-	 (< emacs-minor-version 29))
+;-    ;; Pre 19.29 has a shitty font-lock.el, so we kludge around it.
+;-    (mapcar (function (lambda (sym)
+;-			(copy-face (symbol-value sym) sym)
+;-			(set sym sym)))
+;-	    '(font-lock-comment-face
+;-	      font-lock-doc-string-face
+;-	      font-lock-string-face
+;-	      font-lock-function-name-face
+;-	      font-lock-keyword-face
+;-	      font-lock-type-face))
+;-    (set-face-foreground font-lock-comment-face "firebrick")
+;-    (set-face-foreground font-lock-string-face "mediumforestgreen")
+;-    (set-face-foreground font-lock-function-name-face "blue")
+;-    (set-face-foreground font-lock-keyword-face "royalblue")
+;-    (make-face-unitalic font-lock-string-face)
+;-    (set-face-underline-p font-lock-string-face nil)
+;-    )))
+;-
 ;;;---------------------------------------------------------------------
 ;;; Forms
 
@@ -1847,6 +2164,16 @@ I sent in a patch..."
   (define-key html-helper-mode-map "\C-\M-f" 'forward-sexp)
   (local-unset-key "\C-c-")		;want long-comment()
   (setq mode-name "hh"))		;less verbose
+
+;;;---------------------------------------------------------------------
+;;; ibuffer
+
+(add-hook* 'ibuffer-hook
+  ;; Leave cursor on what "other-buffer" would give you, rather than
+  ;; leaving it where you last were in the ibuffer buffer, which is
+  ;; kind of useless and annoying.
+  (goto-char (point-min))
+  (ibuffer-forward-line 2 t))
 
 ;;;---------------------------------------------------------------------
 ;;; ksh/sh/bash mode
@@ -1958,48 +2285,103 @@ I sent in a patch..."
   (gnus arg))
 
 ;;;---------------------------------------------------------------------
+;;; makefile mode
+;;;
+
+(defun my-makefile-mode-hook ()
+  (make-local-variable 'page-delimiter)
+  (setq page-delimiter "^\\(\\|###[-=]+\\)"))
+
+(add-hook 'makefile-mode-hook 'my-makefile-mode-hook)
+
+;;;---------------------------------------------------------------------
+;;; mu4e
+;;; http://www.brool.com/index.php/using-mu4e
+;;; 
+
+;;; message view action.  copied from the internet.
+(defun my-mu4e-msgv-action-view-in-browser (msg)
+  "View the body of the message in a web browser."
+  (interactive)
+  (let ((html (mu4e-msg-field (mu4e-message-at-point t) :body-html))
+	(tmpfile (format "%s/%d.html" temporary-file-directory (random))))
+    (unless html (error "No html part for this message"))
+    (with-temp-file tmpfile
+      (insert
+       "<html>"
+       "<head><meta http-equiv=\"content-type\""
+       "content=\"text/html;charset=UTF-8\">"
+       html))
+    (browse-url (concat "file://" tmpfile))))
+
+(defun my-customize-mu4e ()
+  ; XXX/lomew needs passwd
+  ; (setq mu4e-get-mail-command "~/src/offlineimap/offlineimap.py")
+  ;; use "a" then "V" in message view to send to browser
+  (add-to-list 'mu4e-view-actions
+	       '("View in browser" . my-mu4e-msgv-action-view-in-browser) t))
+
+(add-hook 'mu4e-main-mode-hook 'my-customize-mu4e)
+
+;; filladapt makes the message view headers all run together
+;; XXX/lomew this still needs tweaking, still is turned on in places
+(add-hook 'mu4e-view-mode-hook 'turn-off-filladapt-mode)
+
+
+;; default to bcc self
+(defun my-add-bcc ()
+  (save-excursion
+    (message-add-header (concat "Bcc: " my-mail-address "\n"))))
+(add-hook 'mu4e-compose-mode-hook 'my-add-bcc)
+
+;;;---------------------------------------------------------------------
+;;; message mode, used by mu4e and gnus.  see also .gnus
+
+(require 'smtpmail)
+(setq message-send-mail-function 'smtpmail-send-it
+      password-cache-expiry 3600
+      starttls-use-gnutls t
+      ;; magic.  run gnutls-cli -s tlssmtp.riverbed.com -p 587 --tofu
+      ;; by hand first and accept the cert, then it is cached in
+      ;; ~/.gnutls and future --tofu invocations will honor
+      starttls-extra-arguments '("--tofu")
+      starttls-gnutls-program "/usr/local/bin/gnutls-cli"
+      smtpmail-starttls-credentials '(("tlssmtp.riverbed.com" 587 nil nil))
+      smtpmail-auth-credentials (list (list "tlssmtp.riverbed.com" 587 my-smtp-login-name nil))
+      smtpmail-default-smtp-server "tlssmtp.riverbed.com"
+      smtpmail-smtp-server "tlssmtp.riverbed.com"
+      smtpmail-smtp-service 587)
+     
+;; alternatively, for emacs-24 you can use:
+;;(setq message-send-mail-function 'smtpmail-send-it
+;;     smtpmail-stream-type 'starttls
+;;     smtpmail-default-smtp-server "tlssmtp.riverbed.com"
+;;     smtpmail-smtp-server "tlssmtp.riverbed.com"
+;;     smtpmail-smtp-service 587)
+     
+;; don't keep message buffers around
+(setq message-kill-buffer-on-exit t)
+
+;;;---------------------------------------------------------------------
 ;;; org mode
 
-(add-hook* 'org-mode-hook
+(defun my-org-mode-hook ()
   ;; Reset C-tab.
   ;; XXX/lomew this prob won't work in xemacs
   (local-set-key [(control tab)] (global-key-binding [(control tab)]))
 
-  (setq org-special-ctrl-a/e	t)	;skip tags and stars
-  (setq org-cycle-global-at-bob	t)	;TAB at BOB will global-cycle
-  (setq org-startup-folded	nil)	;don't start up folded
+  (local-set-key "\C-cg" 'org-mac-grab-link)
 
-  ;; "clean" view settings
-  (setq org-startup-indented	t)
-  (setq org-hide-leading-stars  t)
-;  (setq org-odd-levels-only	nil)
+  ;; I keep hitting this on accident (org-archive-subtree)
+  (local-unset-key "\C-c$")
 
-  ;; add a timestamp when finishing an item, intention is to be able
-  ;; to gather these up for reports.
-  ;; see #+STARTUP: logdone
-  ;;(setq org-log-done 'time)
-  (setq org-agenda-files (list (~/ "work/org")))
+  ;; alignment seems screwed with tabs
+  (setq indent-tabs-mode nil)
 
-  ;; remember-mode integration
-  (org-remember-insinuate)
-  (setq org-directory (~/ "work/org"))
-  (setq org-default-notes-file (~/ "work/org/notes.org"))
-  (setq org-remember-templates
-	'(("Todo" ?t "* TODO %?\n" "~/work/org/todo.org" "incoming")
-	  ("Journal" ?j "* REPORT %u %?\n" "~/work/org/journal-r.org")
-	  ("Journal" ?J "* %u %?\n" "~/work/org/journal-r.org")))
-
-  ;; for refiling
-  (setq org-reverse-note-order t)
-
-  ;; Require sub-TODOs and checkboxes to be complete before the parent
-  ;; can be marked done
-  (setq org-enforce-todo-dependencies t)
-  (setq org-enforce-todo-checkbox-dependencies t)
-
-  ;; link [[bug:1234]]
-  (setq org-link-abbrev-alist
-	'(("bug" . "http://bugzilla.nbttech.com/bugzilla/show_bug.cgi?id=%s"))))
+  (make-variable-buffer-local 'page-delimiter)
+  (setq page-delimiter "^\\* "))
+  
+(add-hook 'org-mode-hook 'my-org-mode-hook)
 
 ;;;---------------------------------------------------------------------
 ;;; Perl (I should try cperl mode but it seems so fragile and hacked
@@ -2021,11 +2403,15 @@ I sent in a patch..."
     (Info-index thing))
   (pop-to-buffer "*info*"))
 
-(add-hook* 'perl-mode-hook
+(defun my-perl-mode-hook ()
   (define-abbrev-table 'perl-mode-abbrev-table my-perl-abbrevs)
   (define-abbrev-table 'cperl-mode-abbrev-table my-perl-abbrevs)
   (define-key perl-mode-map "\C-chf" 'my-perl-info-lookup)
   (define-key perl-mode-map "\C-chv" 'my-perl-info-lookup)
+
+  (make-local-variable 'page-delimiter)
+  (setq page-delimiter "^\\(\\|###[-=]+\\)")
+
   ;; dammit
   (if running-xemacs
       (define-key perl-mode-map [(meta backspace)] 'backward-kill-word))
@@ -2035,6 +2421,8 @@ I sent in a patch..."
 	)
   (if (zerop (buffer-size))
       (insert "#!/usr/bin/perl -w\n\n")))
+
+(add-hook 'perl-mode-hook 'my-perl-mode-hook)
 
 ;; cperl has all this electric keyword bullshit and says it is turned off
 ;; with cperl-electric-keywords, etc, but that only determines if cperl-mode
@@ -2200,6 +2588,16 @@ The host and port are determined from the buffer name."
 	  comment-indent-function	'text-comment-indent)))
 
 ;;;---------------------------------------------------------------------
+;;; YAML mode
+;;;---------------------------------------------------------------------
+
+(defun my-yaml-mode-hook ()
+  (make-variable-buffer-local 'page-delimiter)
+  (setq page-delimiter "^[a-z]"))	;move among outer elems
+
+(add-hook 'yaml-mode-hook 'my-yaml-mode-hook)
+
+;;;---------------------------------------------------------------------
 ;;; zenirc mode
 ;;;---------------------------------------------------------------------
 
@@ -2218,14 +2616,37 @@ The host and port are determined from the buffer name."
 
 (when (or using-w32 using-mac)
   (set-face-background 'default "beige")
+  (set-face-background 'lazy-highlight "PaleGreen")
   (set-face-italic-p 'font-lock-comment-face t)
   (set-face-bold-p 'font-lock-function-name-face t)
   (set-face-bold-p 'font-lock-keyword-face t)
-  (set-face-background 'cursor "gray40"))
+  (set-face-background 'cursor "gray40")
+  (set-face-foreground 'isearch "gray20")
+  (set-face-background 'isearch "yellow2"))
 (when using-mac
-  ;; see also ns-popup-font-panel
-  (set-frame-font "-apple-Monaco-medium-normal-normal-*-14-*-*-*-m-0-iso10646-1")
-  (setq ns-command-modifier 'meta))	;command key does meta
+  (if nil
+      (set-frame-font "Ubuntu Mono-16"))
+  (defun font-large ()
+    (interactive)
+    (set-frame-font "Monaco-18"))
+  (defun font-normal ()
+    (interactive)
+    (set-frame-font "Monaco-14"))
+  (defun font-small ()
+    (interactive)
+    (set-frame-font "Monaco-12"))
+  (defun font-tiny ()
+    (interactive)
+    (set-frame-font "Monaco-10"))
+					;; see also ns-popup-font-panel
+  (setenv "PATH" (concat "/Users/bart/bin/x86-64_darwin:"
+			 "/Users/bart/bin:"
+			 (getenv "PATH")))
+  (add-to-list 'exec-path "/usr/local/bin") ;find brew stuff
+  (font-normal)
+  (setq ns-command-modifier 'meta)  	;command key does meta
+  ;; so emacsclient can find it
+  (setq server-socket-dir (format "/tmp/emacs%d" (user-uid))))
 
 (when using-w32
   ;; i think i also set SHELL something in the system->environment vars
@@ -2247,7 +2668,8 @@ The host and port are determined from the buffer name."
 
 ;; Allow client connections (thru unix local sockets).
 ;; Use either gnuserv (xemacs) or emacsclient (emacs)
-(unless using-w32
+(unless (or using-w32 (and (fboundp 'daemonp)
+			   (daemonp)))
   (if (fboundp 'gnuserv-start)
       (gnuserv-start)
     (if (fboundp 'server-start)
@@ -2262,11 +2684,5 @@ The host and port are determined from the buffer name."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(load-home-init-file t t)
- '(org-agenda-files (quote ("~/work/notes/todo.org"))))
-(custom-set-faces
-  ;; custom-set-faces was added by Custom.
-  ;; If you edit it by hand, you could mess it up, so be careful.
-  ;; Your init file should contain only one such instance.
-  ;; If there is more than one, they won't work right.
- '(lazy-highlight ((((class color) (min-colors 88) (background light)) (:background "PaleGreen")))))
+ '(load-home-init-file t t))
+(custom-set-faces)
