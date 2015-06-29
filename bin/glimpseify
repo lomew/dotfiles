@@ -3,7 +3,7 @@
 ## and to create a .glimpse_exclude file.
 ## $Id: glimpseify,v 1.2 1999-03-04 20:32:37-08 lomew Exp $
 
-PATH=/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin:$PATH; export PATH
+PATH=$HOME/bin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin:$PATH; export PATH
 
 [ $# -ge 2 ] || {
 	echo "Usage: $0 base dir1 [dir2 ...]"
@@ -21,6 +21,7 @@ for d do
 			echo > .glimpse_exclude '.glimpse_'
 			echo >>.glimpse_exclude 'CVS$'
 			echo >>.glimpse_exclude '\.svn$'
+			echo >>.glimpse_exclude '\.git$'
 			echo >>.glimpse_exclude 'TAGS$'
 			echo >>.glimpse_exclude '#'
 			echo >>.glimpse_exclude '~'
