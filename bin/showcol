@@ -1,0 +1,16 @@
+#!/bin/sh
+# show a column
+# XXX what about "cut -d: -f 3 /etc/passwd"
+
+flag=
+case $1 in
+	-*)
+		flag=$1
+		shift
+		;;
+esac
+
+col=$1
+shift
+
+awk $flag '{print $'$col'}' $*

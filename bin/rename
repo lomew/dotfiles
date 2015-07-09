@@ -1,0 +1,31 @@
+#!/usr/bin/perl
+#
+# rename script examples from lwall:
+#       rename 's/\.orig$//' *.orig
+#       rename 'y/A-Z/a-z/ unless /^Make/' *
+#       rename '$_ .= ".bad"' *.f
+#       rename 'print "$_: "; s/foo/bar/ if <stdin> =~ /^y/i' *
+
+use Getopt::Std;
+
+getopts("n");
+
+$fake = defined($opt_n)? $opt_n : 0;
+
+$op = shift;
+for (@ARGV) {
+    $was = $_;
+    eval $op;
+    warn "eval `$op' failed: $@" if $@;
+    if ($was ne $_) {
+	if (-e $_) {
+	    warn "$_ already exists!\n";
+	    next;
+	}
+	if ($fake) {
+	    print "$was -> $_\n";
+	    next;
+	}
+	rename($was, $_) || warn "rename `$was' -> `$_': $!";
+    }
+}
