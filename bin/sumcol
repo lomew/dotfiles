@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# sum a column, like in "du" output
+#
+# usage: sumcol [arg-to-awk] column-number
+# e.g., 
+#	du -s | sumcol 2		# sums bytes (column 2)
+#	sumcol -F: 3 /etc/passwd	# sums uid column, splits by :
+#
+
+flag=
+case $1 in
+	-*)
+		flag=$1
+		shift
+		;;
+esac
+
+col=$1
+shift
+
+awk $flag '{sum += $'$col'}; END{print sum}' $*
