@@ -1,0 +1,43 @@
+[core]
+#	whitespace = -space-before-tab -trailing-space
+	pager = less -R
+[color]
+	ui = true
+[alias]
+	# depends on my "origin" symbolic-ref being set up
+	#logup = log --decorate origin..
+	logup = log --decorate @{u}..
+	stat = status
+	co = checkout
+	br = branch
+	ci = commit
+	lsd = log --graph --decorate --oneline --all 
+	rpull = pull --rebase
+[user]
+	name = Bart Robinson
+	email = lomew@jut.io
+[log]
+	date = local
+[notes]
+	# preserve notes when rebasing
+        rewriteRef = refs/notes/*
+[branch]
+	autosetupmerge = always
+
+# to use ediff as a difftool
+# usage: difftool -t?
+[diff]
+        tool = ediff
+
+[difftool "ediff"]
+        cmd = ediff.sh $LOCAL $REMOTE $MERGED
+
+[merge]
+        tool = ediff
+
+[mergetool "ediff"]
+        cmd = ediff.sh $LOCAL $REMOTE $MERGED $BASE
+        trustExitCode = true
+# some setting from gitlab
+[push]
+	default = simple

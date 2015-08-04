@@ -221,8 +221,8 @@ regular expression search was done with `string-match'."
  hypropos-programming-apropos	t
  ibuffer-bury-self-on-visit	t
  lazy-lock-stealth-time		nil		;interferes with follow.el
- lsvn-commit-template "BugID: \nCC: \nApproved-by: \nReviewed-by: \n"
- lgit-commit-template lsvn-commit-template
+ lsvn-commit-template		my-commit-template
+ lgit-commit-template		my-commit-template
 ; mail-archive-file-name		"~/Mail/sent-mail.ar"
  ;; Same as mail-self-blind but includes a full mail address.
  mail-default-headers		(concat "BCC: " my-login-name "\n")
@@ -1428,7 +1428,7 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 	   (file+headline "~/work/org/todo.org" "incoming")
 	   "* TODO %?\n%(org-mac-outlook-message-get-links \"s\")\n" :prepend t)
 	  ("j" "Journal" entry
-	   (file+headline "~/work/org/journal-r.org" "current")
+	   (file+headline "~/work/org/journal.org" "current")
 	   "* REPORT %u %?\n" :prepend t)
 	  ("d" "Home Diary" entry
 	   (file "~/priv/docs/org/journal.org")
@@ -1460,12 +1460,14 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 
   ;; link [[bug:1234]]
   (setq org-link-abbrev-alist
-	'(("bug" . "http://bugzilla.nbttech.com/bugzilla/show_bug.cgi?id=%s")
-	  ("Bug" . "http://bugzilla.nbttech.com/bugzilla/show_bug.cgi?id=%s")
-	  ("case" . "http://eng-ops.lab.nbttech.com/viewcase.php?case=%s")
-	  ("storewiki" . "https://storewiki.lab.nbttech.com/bin/view/Main/%s")
-	  ("twiki" . "https://twiki.nbttech.com/twiki/bin/view/NBT/%s")
-	  ("review" . "http://review.lab.nbttech.com/r/%s")))
+	'(("jira" . "https://jut-io.atlassian.net/browse/%s")
+;	  ("bug" . "http://bugzilla.nbttech.com/bugzilla/show_bug.cgi?id=%s")
+;	  ("Bug" . "http://bugzilla.nbttech.com/bugzilla/show_bug.cgi?id=%s")
+;	  ("case" . "http://eng-ops.lab.nbttech.com/viewcase.php?case=%s")
+;	  ("storewiki" . "https://storewiki.lab.nbttech.com/bin/view/Main/%s")
+;	  ("twiki" . "https://twiki.nbttech.com/twiki/bin/view/NBT/%s")
+;	  ("review" . "http://review.lab.nbttech.com/r/%s")
+	  ))
 
   (setq org-agenda-prefix-format
 	'((agenda  . "  %-12:c%?-12t% s")

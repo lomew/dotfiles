@@ -111,6 +111,10 @@ export PAGER=less
 export LESS="-imnz-3"
 [ -d ~/lib ] && export PERLLIB=~/lib
 
+# for jut
+export WORKON_HOME=$HOME/.virtualenvs
+source `which virtualenvwrapper.sh`
+
 [ -f ~/.bash_aliases ] && . ~/.bash_aliases
 
 ## .bashrc ends here

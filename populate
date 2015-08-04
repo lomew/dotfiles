@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 # Run this from the place to be populated.
 
 opendir(DIR, "init/dot") || die "opendir init/dot: $!\n";
