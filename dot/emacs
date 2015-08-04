@@ -1431,17 +1431,16 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 	   (file+headline "~/work/org/journal-r.org" "current")
 	   "* REPORT %u %?\n" :prepend t)
 	  ("d" "Home Diary" entry
-	   (file+headline "/volumes/Secure Disk/docs/org/journal.org" "")
+	   (file "~/priv/docs/org/journal.org")
 	   "* %u %?\n" :prepend t)
 	  ("h" "Home Todo" entry
-	   (file+headline "~/Documents/org/home.org" "incoming")
+	   (file+headline "~/Documents/org/todo.org" "incoming")
 	   "* TODO %?\n" :prepend t)))
 
   ;; org-mac-link, for grabbing links to outlook msgs and other things
   (setq org-mac-grab-Mail-app-p nil
 	org-mac-grab-Safari-app-p nil)
   (load "org-mac-link" t t)
-
 
   (setq org-special-ctrl-a/e	t)	;skip tags and stars
   (setq org-cycle-global-at-bob	t)	;TAB at BOB will global-cycle
@@ -1496,11 +1495,16 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 			)))
 	   ((org-agenda-files (list (~/ "work/org")))))
 	  ("h" "Home tasks"
+	   ((tags-todo "+PRIORITY=\"A\"")
+	    (tags-todo "+PRIORITY=\"B\""))
+	   ((org-agenda-files (list (~/ "Documents/org")))))
+	  ("H" "Home tasks"
 	   ((tags-todo "today"
 		       ((org-agenda-hide-tags-regexp "today")))
 	    (tags-todo "upcoming"
 		       ((org-agenda-hide-tags-regexp "upcoming"))))
-	   ((org-agenda-files (list (~/ "Documents/org"))))))))
+	   ((org-agenda-files (list (~/ "Documents/org")))))
+	  )))
 
 ;; If ibuffer is available, use it, otherwise fall back to electric buffer list.
 (if (fboundp 'ibuffer)
