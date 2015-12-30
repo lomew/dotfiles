@@ -1,0 +1,8 @@
+#!/bin/sh
+commit=$1
+[ -n $commit ] || {
+	echo "usage: $0 commit"
+	exit 1
+}
+args=`git show $commit --format=format:%p | sed 's/ /../'`
+exec git show $args

@@ -73,6 +73,8 @@ case "Darwin*x86_64":
 	# hack to take what we came in here with
 	set path_gen_back = ()
 	set path_gen_front = ($orig_path)
+	# add google stuff
+	set path_gen_front = ($path_gen_front /Users/bart/src/google-cloud-sdk/bin)
 	breaksw
 
 case "FreeBSD 4*":
@@ -257,6 +259,10 @@ unsetenv LANG				# for linux man page badness
 if (-f ~/priv/inbox) setenv MAIL ~/priv/inbox
 if (-f ~/.hostaliases) setenv HOSTALIASES ~/.hostaliases
 setenv GREP_OPTIONS '--exclude=*.svn-base'
+
+# N, the node manager version switcher thing (see http://git.io/n-install-repo).
+setenv N_PREFIX $HOME/n
+set path = ($path $N_PREFIX/bin)
 
 ## XXX this can go away when I have a Grand Unified Home Directory.
 if (! $?REMOTEHOST) setenv REMOTEHOST local

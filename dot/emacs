@@ -84,6 +84,7 @@ regular expression search was done with `string-match'."
 (setq load-path (append (list (~/ "emacs")
 			      (~/ "install/emacs/site-lisp/org")
 			      (~/ "emacs/vm")
+			      (~/ "emacs/web-mode")
 			      (~/ "emacs/lsvn")
 			      (~/ "emacs/lgit")
 			      (~/ "emacs/magit")
@@ -221,8 +222,8 @@ regular expression search was done with `string-match'."
  hypropos-programming-apropos	t
  ibuffer-bury-self-on-visit	t
  lazy-lock-stealth-time		nil		;interferes with follow.el
- lsvn-commit-template		my-commit-template
- lgit-commit-template		my-commit-template
+; lsvn-commit-template		my-commit-template
+; lgit-commit-template		my-commit-template
 ; mail-archive-file-name		"~/Mail/sent-mail.ar"
  ;; Same as mail-self-blind but includes a full mail address.
  mail-default-headers		(concat "BCC: " my-login-name "\n")
@@ -272,6 +273,7 @@ regular expression search was done with `string-match'."
 		("\\.ps$"	 . postscript-mode)
 		("\\.[pP][Llm]$" . perl-mode)
 		("\\.[1-8]$"	 . text-mode)
+		("\\.jsx$"	 . web-mode)
 		("GNUmakerules\\(.in\\)?\\'" . makefile-mode))
 	      auto-mode-alist))
 
@@ -350,6 +352,7 @@ regular expression search was done with `string-match'."
     (cua-toggle-rectangle-mark "cua-rect" "cua rectangles" t)
     (mu4e "mu4e" "MU for Emacs" t)
     (mu4e-compose-new "mu4e" "Send mail using mu4e" t)
+    (web-mode "web-mode" "Web mode" t)
     ))
 
 ;; cua mode - trying out the rectangle support
@@ -1434,7 +1437,7 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 	   (file "~/priv/docs/org/journal.org")
 	   "* %u %?\n" :prepend t)
 	  ("h" "Home Todo" entry
-	   (file+headline "~/Documents/org/todo.org" "incoming")
+	   (file+headline "~/Documents/org/personal-todo.org" "incoming")
 	   "* TODO %?\n" :prepend t)))
 
   ;; org-mac-link, for grabbing links to outlook msgs and other things
@@ -1469,6 +1472,8 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 ;	  ("review" . "http://review.lab.nbttech.com/r/%s")
 	  ))
 
+  (add-to-list 'org-export-backends 'md)
+
   (setq org-agenda-prefix-format
 	'((agenda  . "  %-12:c%?-12t% s")
 	  (timeline  . "  % s")
@@ -1497,7 +1502,7 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 			)))
 	   ((org-agenda-files (list (~/ "work/org")))))
 	  ("h" "Home tasks"
-	   ((tags-todo "+PRIORITY=\"A\"")
+	   ((tags-todo "+PRIORITY=\"A\"|+today|+incoming")
 	    (tags-todo "+PRIORITY=\"B\""))
 	   ((org-agenda-files (list (~/ "Documents/org")))))
 	  ("H" "Home tasks"
@@ -2180,6 +2185,14 @@ If the prefix ARG is given, return the boundaries of the current file instead."
   ;; kind of useless and annoying.
   (goto-char (point-min))
   (ibuffer-forward-line 2 t))
+
+;;;---------------------------------------------------------------------
+;;; javascript mode
+
+(defun my-js-mode-hook ()
+  (setq indent-tabs-mode nil))
+
+(add-hook 'js-mode-hook 'my-js-mode-hook)
 
 ;;;---------------------------------------------------------------------
 ;;; ksh/sh/bash mode
