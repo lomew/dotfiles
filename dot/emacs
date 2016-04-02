@@ -555,8 +555,12 @@ regular expression search was done with `string-match'."
  mu4e-maildir			"~/Mail")
 
 (add-to-list 'load-path (~/ "emacs/yaml-mode") 'append)
-(add-to-list 'auto-mode-alist '("\\.ya?ml$" . yaml-mode) 'append)
+(add-to-list 'auto-mode-alist '("\\.ya?ml$" . yaml-mode))
 (autoload 'yaml-mode "yaml-mode" "YAML mode" t)
+
+(add-to-list 'load-path (~/ "emacs/rust-mode") 'append)
+(add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
+(autoload 'rust-mode "rust-mode" nil t)
 
 
 ;;;=====================================================================
@@ -1425,10 +1429,10 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 ;	  ("Home Todo" ?h "* TODO %?\n" "~/Documents/org/home.org" "incoming")))
   (setq org-capture-templates
 	'(("t" "Todo" entry
-	   (file+headline "~/work/org/todo.org" "incoming")
+	   (file+headline "~/work/org/todo/todo.org" "incoming")
 	   "* TODO %?\n" :prepend t)
 	  ("T" "Todo with mail link" entry
-	   (file+headline "~/work/org/todo.org" "incoming")
+	   (file+headline "~/work/org/todo/todo.org" "incoming")
 	   "* TODO %?\n%(org-mac-outlook-message-get-links \"s\")\n" :prepend t)
 	  ("j" "Journal" entry
 	   (file+headline "~/work/org/journal.org" "current")
@@ -1437,7 +1441,7 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 	   (file "~/priv/docs/org/journal.org")
 	   "* %u %?\n" :prepend t)
 	  ("h" "Home Todo" entry
-	   (file+headline "~/Documents/org/personal-todo.org" "incoming")
+	   (file+headline "~/Documents/org/todo/personal-todo.org" "incoming")
 	   "* TODO %?\n" :prepend t)))
 
   ;; org-mac-link, for grabbing links to outlook msgs and other things
@@ -1488,29 +1492,31 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 	'(("r" "Items for weekly report"
 	   ((todo "REPORT")))
 	  ("w" "Work tasks"
-	   ((tags-todo "+today"
-		       (
-			(org-agenda-hide-tags-regexp "today\\|upcoming")
-			;(org-agenda-remove-tags 'prefix)
-			;(org-agenda-show-inherited-tags nil)
-			))
-	    (tags-todo "+upcoming-today"
-		       (
-			(org-agenda-hide-tags-regexp "upcoming")
-			;(org-agenda-remove-tags 'prefix)
-			;(org-agenda-show-inherited-tags nil)
-			)))
-	   ((org-agenda-files (list (~/ "work/org")))))
+;	   ((tags-todo "+today"
+;		       (
+;			(org-agenda-hide-tags-regexp "today\\|upcoming")
+;			;(org-agenda-remove-tags 'prefix)
+;			;(org-agenda-show-inherited-tags nil)
+;			))
+;	    (tags-todo "+upcoming-today"
+;		       (
+;			(org-agenda-hide-tags-regexp "upcoming")
+;			;(org-agenda-remove-tags 'prefix)
+;			;(org-agenda-show-inherited-tags nil)
+;			)))
+	   ((tags-todo "+PRIORITY=\"A\"|+today|+incoming") ;active
+	    (tags-todo "+PRIORITY=\"B\""))		   ;upcoming
+	   ((org-agenda-files (list (~/ "work/org/todo")))))
 	  ("h" "Home tasks"
 	   ((tags-todo "+PRIORITY=\"A\"|+today|+incoming")
 	    (tags-todo "+PRIORITY=\"B\""))
-	   ((org-agenda-files (list (~/ "Documents/org")))))
+	   ((org-agenda-files (list (~/ "Documents/org/todo")))))
 	  ("H" "Home tasks"
 	   ((tags-todo "today"
 		       ((org-agenda-hide-tags-regexp "today")))
 	    (tags-todo "upcoming"
 		       ((org-agenda-hide-tags-regexp "upcoming"))))
-	   ((org-agenda-files (list (~/ "Documents/org")))))
+	   ((org-agenda-files (list (~/ "Documents/org/todo")))))
 	  )))
 
 ;; If ibuffer is available, use it, otherwise fall back to electric buffer list.
