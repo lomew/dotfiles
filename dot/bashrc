@@ -5,10 +5,10 @@
 umask 022
 
 ## This is unset later in .bash_aliases if -f /usr/local/bin/man
-export MANPATH=/usr/man:/usr/lang/man:/usr/local/man:/usr/local/apps/man:/usr/local/gnu/man:/usr/local/share/contrib/man:/usr/afsws/man
+#export MANPATH=/usr/man:/usr/lang/man:/usr/local/man:/usr/local/apps/man:/usr/local/gnu/man:/usr/local/share/contrib/man:/usr/afsws/man
 
 ## Basic path built upon later
-export PATH=/usr/bin:/usr/sbin:/usr/ccs/bin:/usr/local/bin:/usr/local/apps/bin:/usr/ucb:/bin:/usr/local/X11/bin:/usr/bin/X11
+#export PATH=/usr/bin:/usr/sbin:/usr/ccs/bin:/usr/local/bin:/usr/local/apps/bin:/usr/ucb:/bin:/usr/local/X11/bin:/usr/bin/X11
 
 ## This is a dir on some spots, a script on others
 [ -d /usr/local/bin/X11 ] && PATH=$PATH:/usr/local/bin/X11
@@ -79,8 +79,8 @@ esac
 tcbold=''
 tcoff=''
 case $TERM in
-vt100|xterm|vs100)
-	tcbold='[5m'
+vt100|xterm-*|vs100)
+	tcbold='[33m[1m'		# bold and yellow
 	tcoff='[m'
 	;;
 esac
@@ -90,9 +90,9 @@ HISTSIZE=100
 HISTCONTROL=ignoreboth
 IGNOREEOF=10
 unset MAILCHECK				# shell won't hang if sunset goes down
-#PS1="\[$tcbold\]\! \h:\W$\[$tcoff\] "	# XXX I want real bold, this is a hack
+PS1="\[$tcbold\]\! \h:\W$\[$tcoff\] "	# XXX I want real bold, this is a hack
 					# and works only with newer bash's
-PS1="\! \h:\W$ "
+#PS1="\! \h:\W$ "
 set -o noclobber
 ulimit -c unlimited			# big core
 
@@ -102,7 +102,7 @@ ulimit -c unlimited			# big core
 # XXX notify of pending jobs when ^Z
 # XXX better completion e.g., c.l.p ==> comp.lang.perl
 
-PATH=~/bin/@sys:~/bin:/usr/local/sbin:/usr/local/gnu/bin:$PATH:/usr/afsws/bin:/usr/local/etc:/usr/afsws/etc:/usr/etc:/etc:/var/site/etc:/usr/local/contrib/bin:/usr/local/share/contrib/bin
+#PATH=~/bin/@sys:~/bin:/usr/local/sbin:/usr/local/gnu/bin:$PATH:/usr/afsws/bin:/usr/local/etc:/usr/afsws/etc:/usr/etc:/etc:/var/site/etc:/usr/local/contrib/bin:/usr/local/share/contrib/bin
 
 export NNTPSERVER=news
 export EDITOR=vi
@@ -110,10 +110,6 @@ export VISUAL=vi
 export PAGER=less
 export LESS="-imnz-3"
 [ -d ~/lib ] && export PERLLIB=~/lib
-
-# for jut
-export WORKON_HOME=$HOME/.virtualenvs
-source `which virtualenvwrapper.sh`
 
 [ -f ~/.bash_aliases ] && . ~/.bash_aliases
 

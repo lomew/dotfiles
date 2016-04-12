@@ -562,6 +562,13 @@ regular expression search was done with `string-match'."
 (add-to-list 'auto-mode-alist '("\\.rs\\'" . rust-mode))
 (autoload 'rust-mode "rust-mode" nil t)
 
+(require 'package)
+(add-to-list 'package-archives
+             '("melpa" . "https://melpa.org/packages/"))
+(package-initialize)
+
+(require 'scala-mode-auto)
+
 
 ;;;=====================================================================
 ;;; Random functions, macros, and the like.  These are user functions,
@@ -1403,9 +1410,11 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
   ;; see also visual-line-mode, visual word wrapping
   (setq visual-line-fringe-indicators '(nil right-curly-arrow))
 
-  ;; for habit tracking
   (eval-after-load "org.el"
     (lambda ()
+      ;; for exporting to markdown
+      (add-to-list 'org-export-backends 'md)
+      ;; for habit tracking
       (add-to-list 'org-modules 'org-habit)))
 
   ;; part of clean-view setting
@@ -1467,7 +1476,7 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 
   ;; link [[bug:1234]]
   (setq org-link-abbrev-alist
-	'(("jira" . "https://jut-io.atlassian.net/browse/%s")
+	'(("jira" . "https://jira.twitter.biz/browse/%s")
 ;	  ("bug" . "http://bugzilla.nbttech.com/bugzilla/show_bug.cgi?id=%s")
 ;	  ("Bug" . "http://bugzilla.nbttech.com/bugzilla/show_bug.cgi?id=%s")
 ;	  ("case" . "http://eng-ops.lab.nbttech.com/viewcase.php?case=%s")
@@ -1476,7 +1485,8 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 ;	  ("review" . "http://review.lab.nbttech.com/r/%s")
 	  ))
 
-  (add-to-list 'org-export-backends 'md)
+  ;; Easy "go" links.
+  (load "org-twitter-go-handler" t t)
 
   (setq org-agenda-prefix-format
 	'((agenda  . "  %-12:c%?-12t% s")
@@ -1504,8 +1514,9 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 ;			;(org-agenda-remove-tags 'prefix)
 ;			;(org-agenda-show-inherited-tags nil)
 ;			)))
-	   ((tags-todo "+PRIORITY=\"A\"|+today|+incoming") ;active
-	    (tags-todo "+PRIORITY=\"B\""))		   ;upcoming
+	   ((tags-todo "+incoming") ;incoming
+	    (tags-todo "+PRIORITY=\"A\"|+today") ;active
+	    (tags-todo "+PRIORITY=\"C\"|+upcoming"))		   ;upcoming
 	   ((org-agenda-files (list (~/ "work/org/todo")))))
 	  ("h" "Home tasks"
 	   ((tags-todo "+PRIORITY=\"A\"|+today|+incoming")
@@ -2464,6 +2475,19 @@ If the prefix ARG is given, return the boundaries of the current file instead."
 	)
   (if (zerop (buffer-size))
       (insert "#!/usr/local/bin/perl -w\n\n")))
+
+;;;---------------------------------------------------------------------
+;;; Scala
+
+(defun my-scala-mode-hook ()
+  ;; Normally a dedent.
+  (local-set-key [C-tab] 'other-window)
+
+  ;; Camel navigation
+  (if (fboundp 'subword-mode)
+      (subword-mode 1)))
+
+(add-hook 'scala-mode-hook 'my-scala-mode-hook)
 
 ;;;---------------------------------------------------------------------
 ;;; Shell mode

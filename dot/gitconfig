@@ -15,7 +15,7 @@
 	rpull = pull --rebase
 [user]
 	name = Bart Robinson
-	email = lomew@jut.io
+	email = brobinson@twitter.com
 [log]
 	date = local
 [notes]
@@ -28,6 +28,7 @@
 # usage: difftool -t?
 [diff]
         tool = ediff
+	renames = true
 
 [difftool "ediff"]
         cmd = ediff.sh $LOCAL $REMOTE $MERGED
@@ -41,3 +42,5 @@
 # some setting from gitlab
 [push]
 	default = simple
+[http]
+	postBuffer = 524288000

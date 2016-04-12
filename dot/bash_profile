@@ -2,11 +2,13 @@
 
 [ -f ~/.bashrc ] && . ~/.bashrc
 
+# XXX/lomew old terminal crap
+
 ## Have to set SHELL so tset knows to do sh or csh commands
-eval `SHELL=bash tset -m "unknown:?$TERM" -m dialup:t10 -m "network:?" -r -s`
+#eval `SHELL=bash tset -m "unknown:?$TERM" -m dialup:t10 -m "network:?" -r -s`
 
 ## Resize is not everywhere
-eval `resize -u`
+#eval `resize -u`
 
-stty erase '^h' kill '^u' intr '^c' quit '^\' susp '^z' -tabs
-stty -extproc 2>/dev/null	# only on bsd
+#stty erase '^h' kill '^u' intr '^c' quit '^\' susp '^z' -tabs
+#stty -extproc 2>/dev/null	# only on bsd

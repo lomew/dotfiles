@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<root>
+
+  <!-- HOTKEYS -->
+  <!-- adapted from http://apple.stackexchange.com/questions/20010/can-i-create-a-shortcut-to-open-a-specific-application-on-os-x -->
+  <vkopenurldef>
+    <name>KeyCode::VK_OPEN_URL_Emacs</name>
+    <url>file:///Applications/Emacs.app</url>
+  </vkopenurldef>
+  <vkopenurldef>
+    <name>KeyCode::VK_OPEN_URL_Slack</name>
+    <url>file:///Applications/Slack.app</url>
+  </vkopenurldef>
+  <vkopenurldef>
+    <name>KeyCode::VK_OPEN_URL_iTerm</name>
+    <url>file:///Applications/Utilities/iTerm.app</url>
+  </vkopenurldef>
+  <vkopenurldef>
+    <name>KeyCode::VK_OPEN_URL_Chrome</name>
+    <url>file:///Applications/Google%20Chrome.app</url>
+  </vkopenurldef>
+  <item>
+    <name>Hotkeys for some apps</name>
+    <identifier>custom</identifier>
+    <autogen>__KeyToKey__ KeyCode::F4, KeyCode::VK_OPEN_URL_Slack</autogen>
+    <autogen>__KeyToKey__ KeyCode::F5, KeyCode::VK_OPEN_URL_Emacs</autogen>
+    <autogen>__KeyToKey__ KeyCode::F8, KeyCode::VK_OPEN_URL_iTerm</autogen>
+    <autogen>__KeyToKey__ KeyCode::F9, KeyCode::VK_OPEN_URL_Chrome</autogen>
+  </item>
+
+  <list>
+    <item>
+      <name>Make PC Application key be another cmd</name>
+      <identifier>private.app_pc_application_cmd</identifier>
+      <block>
+	<autogen>--KeyToKey-- KeyCode::PC_APPLICATION, KeyCode::COMMAND_R</autogen>
+      </block>
+    </item>
+
+    <item>
+      <name>Swap Command_L and Option_L (only in virtual machine, rdc)</name>
+      <identifier>private.app_vm_swap_option_and_command</identifier>
+      <only>VIRTUALMACHINE, REMOTEDESKTOPCONNECTION</only>
+      <block>
+	<autogen>--KeyToKey-- KeyCode::COMMAND_L, KeyCode::OPTION_L</autogen>
+	<autogen>--KeyToKey-- KeyCode::OPTION_L, KeyCode::COMMAND_L</autogen>
+      </block>
+    </item>
+
+    <item>
+      <name>My Terminal Hacks (effective only in Terminal)</name>
+      <appendix>Swap Command and Option for n, p, f, b, m, y, d, delete, w, spc, ?, _, ^-</appendix>
+      <identifier>private.app_terminal_command2_to_ctrlu</identifier>
+      <only>TERMINAL</only>
+      <!-- might want to swap except for tab, `, w, see checkbox.xml -->
+      <!-- downside of this is that running emacs in a terminal won't get everything -->
+      <!-- MOVEMENT -->
+      <autogen>--KeyToKey-- KeyCode::N, ModifierFlag::COMMAND_L, KeyCode::N, ModifierFlag::OPTION_L</autogen>
+      <autogen>--KeyToKey-- KeyCode::P, ModifierFlag::COMMAND_L, KeyCode::P, ModifierFlag::OPTION_L</autogen>
+      <autogen>--KeyToKey-- KeyCode::F, ModifierFlag::COMMAND_L, KeyCode::F, ModifierFlag::OPTION_L</autogen>
+      <autogen>--KeyToKey-- KeyCode::B, ModifierFlag::COMMAND_L, KeyCode::B, ModifierFlag::OPTION_L</autogen>
+
+      <!-- dunno why i added this -->
+<![CDATA[
+      <autogen>--KeyToKey-- KeyCode::M, ModifierFlag::COMMAND_L, KeyCode::M, ModifierFlag::OPTION_L</autogen>
+]]>
+      <!-- YANK POP -->
+      <autogen>--KeyToKey-- KeyCode::Y, ModifierFlag::COMMAND_L, KeyCode::Y, ModifierFlag::OPTION_L</autogen>
+
+      <!-- DELETION -->
+      <autogen>--KeyToKey-- KeyCode::D, ModifierFlag::COMMAND_L, KeyCode::D, ModifierFlag::OPTION_L</autogen>
+      <autogen>--KeyToKey-- KeyCode::DELETE, ModifierFlag::COMMAND_L, KeyCode::DELETE, ModifierFlag::OPTION_L</autogen>
+      <autogen>--KeyToKey-- KeyCode::W, ModifierFlag::COMMAND_L, KeyCode::W, ModifierFlag::OPTION_L</autogen>
+
+      <!-- UPPERCASE/LOWERCASE -->
+      <autogen>--KeyToKey-- KeyCode::U, ModifierFlag::COMMAND_L, KeyCode::U, ModifierFlag::OPTION_L</autogen>
+      <!-- leave out M-C since need it to copy, try iterm to see if auto copy like xterm -->
+      <autogen>--KeyToKey-- KeyCode::L, ModifierFlag::COMMAND_L, KeyCode::L, ModifierFlag::OPTION_L</autogen>
+
+      <!-- MARK -->
+      <autogen>--KeyToKey-- KeyCode::SPACE, ModifierFlag::COMMAND_L, KeyCode::SPACE, ModifierFlag::OPTION_L</autogen>
+      <!-- PREFIX COMPLETE -->
+      <autogen>--KeyToKey-- KeyCode::SLASH, ModifierFlag::SHIFT_L, ModifierFlag::COMMAND_L, KeyCode::SLASH, ModifierFlag::SHIFT_L, ModifierFlag::OPTION_L</autogen>
+
+      <!-- dabbrev-expand, don't want "find cursor" -->
+      <autogen>--KeyToKey-- KeyCode::SLASH, ModifierFlag::COMMAND_L, KeyCode::SLASH, ModifierFlag::OPTION_L</autogen>
+
+<![CDATA[
+      <!-- why twice? and what trying to do -->
+      <autogen>--KeyToKey-- KeyCode::MINUS, ModifierFlag::SHIFT_L, ModifierFlag::COMMAND_L, KeyCode::MINUS, ModifierFlag::SHIFT_L, ModifierFlag::OPTION_L</autogen>
+      <autogen>--KeyToKey-- KeyCode::MINUS, ModifierFlag::SHIFT_L, ModifierFlag::COMMAND_L, KeyCode::MINUS, ModifierFlag::SHIFT_L, ModifierFlag::OPTION_L</autogen>
+]]>
+<![CDATA[
+      <!-- xxx fix, want ctrl-tab ctrl-shift-tab to move between tabs, fixed in system prefs to go to menu -->
+      <autogen>--KeyToKey-- KeyCode::TAB, ModifierFlag::CONTROL_L, KeyCode::BRACKET_LEFT, ModifierFlag::SHIFT_L, ModifierFlag::COMMAND_L</autogen>
+      <autogen>--KeyToKey-- KeyCode::TAB, ModifierFlag::CONTROL_L, ModifierFlag::SHIFT_L, KeyCode::BRACKET_RIGHT, ModifierFlag::SHIFT_L, ModifierFlag::COMMAND_L</autogen>
+]]>
+    </item>
+    <item>
+      <name>My Terminal Hacks2 (effective only in Terminal)</name>
+      <appendix>Swap Command and Option (pass Tab, `, w)</appendix>
+      <identifier>private.app_terminal_command_to_option</identifier>
+      <only>TERMINAL</only>
+      <!-- crap this meses up my cmd-motino to move windows -->
+      <autogen>--KeyToKey-- KeyCode::TAB, ModifierFlag::OPTION_L, KeyCode::TAB, ModifierFlag::COMMAND_L</autogen>
+      <autogen>--KeyToKey-- KeyCode::BACKQUOTE, ModifierFlag::OPTION_L, KeyCode::BACKQUOTE, ModifierFlag::COMMAND_L</autogen>
+      <autogen>--KeyToKey-- KeyCode::COMMAND_L, KeyCode::OPTION_L</autogen>
+    </item>
+    <!-- used to be builtin, copied from https://github.com/tekezo/Karabiner/blob/master/src/core/server/Resources/include/checkbox/pointing_device.xml -->
+    <item>
+        <name>Use Button4 and Button5 as Back/Forward</name>
+        <item>
+          <name>Set 1: Button4 to Command+[ (Back)</name>
+          <identifier>remap.pointing_button4_to_command_bracket_left</identifier>
+          <autogen>__KeyToKey__ PointingButton::BUTTON4, KeyCode::BRACKET_LEFT, ModifierFlag::COMMAND_L</autogen>
+        </item>
+        <item>
+          <name>Set 1: Button5 to Command+] (Forward)</name>
+          <identifier>remap.pointing_button5_to_command_bracket_right</identifier>
+          <autogen>__KeyToKey__ PointingButton::BUTTON5, KeyCode::BRACKET_RIGHT, ModifierFlag::COMMAND_L</autogen>
+        </item>
+        <item>
+          <name>Set 2: Button4 to Command+] (Forward)</name>
+          <identifier>remap.pointing_button4_to_command_bracket_right</identifier>
+          <autogen>__KeyToKey__ PointingButton::BUTTON4, KeyCode::BRACKET_RIGHT, ModifierFlag::COMMAND_L</autogen>
+        </item>
+        <item>
+          <name>Set 2: Button5 to Command+[ (Back)</name>
+          <identifier>remap.pointing_button5_to_command_bracket_left</identifier>
+          <autogen>__KeyToKey__ PointingButton::BUTTON5, KeyCode::BRACKET_LEFT, ModifierFlag::COMMAND_L</autogen>
+        </item>
+      </item>
+  </list>
+</root>

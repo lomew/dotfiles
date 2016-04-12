@@ -18,25 +18,18 @@ cd() {
 #alias		 ../../..='cd ../../..'
 alias		 cd..='cd ..'
 alias		 :cd='builtin cd'
-# alias		 dirs='dirs -v'		# XXX fix this
-# alias		 pushd='pushd -v'	# XXX fix this
-# alias		 popd='popd -v'		# XXX fix this
+alias		 d='dirs -v'		# XXX fix this
+alias		 pd='pushd -v'	# XXX fix this
+alias		 o='popd -v'		# XXX fix this
 alias		ds1='ls -F | grep /'
 ds() {
 	command ls -f "$@" \
 		| perl -lne 'next if /^\.\.?$/; print "$_/" if -d' \
 			| xargs ls -d
 }
-alias		 dots='ls -dFC .*'
-if [ -f /usr/local/gnu/bin/ls ]; then
-	alias		 d='/usr/local/gnu/bin/ls -balF'
-elif [ -f /vmunix ]; then
-	alias		 d='command ls -algF'
-else
-	alias		 d='command ls -alF'
-fi
-alias		 pwd='/bin/pwd'
-alias		 cdrw='cd `/bin/pwd | sed "s,^/afs/,/afs/.,"`'
+alias dots='ls -dFC .*'
+alias ll='ls -lah'
+alias lt='ll -tr'
 alias		 h=history
 alias		 jobs='jobs -l'
 alias		 j=jobs
@@ -44,6 +37,13 @@ alias		 j=jobs
 ##
 ## Random
 ##
+
+alias g=git
+alias gn='git --no-pager'
+
+alias pg='ps augxww|grep'
+alias les=less
+alias ymd='date +%Y-%m-%d'
 
 alias		 which='type -path'
 alias		 where='type -a -path'
@@ -58,39 +58,10 @@ lookat() {
 nman() {
 	nroff -man $1 | col | less -s
 }
-lpr() {
-	lpr "$@"
-	case $1 in
-	-P?*)			# lpr -Pfoo
-		lpq $1
-		;;
-	-P)			# lpr -P foo
-		lpq $1 $2
-	esac
-}
-sds() {
-	export DISPLAY=$1
-}
 blh() {
 	## Bring link here
 	cp $1 $1.$$ && mv -f $1.$$ $1
 }
-alias		 texclean='/bin/rm -f *.dvi *.log *.aux'
-dotdist() {
-	(cd && /usr/ucb/rdist -f ~/.distfile "$@")
-}
-cico() {
-	ci -u "$@" && co -l "$@"
-}
-dectohex() {
-	echo "16o10i${1}p" | dc
-}
-alias		 fs=/usr/afsws/bin/fs
-[ -f /usr/local/bin/man ] && {
-	unset MANPATH
-	alias man='/usr/local/bin/man -A'
-}
-[ $OSTYPE = hpux ] && alias df=bdf
 
 ##
 ## in the xterm esc seq ']n;text^G' n can be:
