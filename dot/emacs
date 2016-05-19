@@ -567,7 +567,7 @@ regular expression search was done with `string-match'."
              '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
-(require 'scala-mode-auto)
+(load "scala-mode-auto" t t)
 
 
 ;;;=====================================================================
@@ -2663,6 +2663,12 @@ The host and port are determined from the buffer name."
 ;;; Misc
 ;;;=====================================================================
 
+(if (not using-mac)
+    ;; XXX/lomew not clear how to influence path before ubuntu unity
+    ;; or whatever starts my emacs, so we hack.
+    (setenv "PATH" (concat (~/ "bin") ":"
+			   (getenv "PATH"))))
+
 (when (or using-w32 using-mac)
   (set-face-background 'default "beige")
   (set-face-background 'lazy-highlight "PaleGreen")
@@ -2674,7 +2680,7 @@ The host and port are determined from the buffer name."
   (set-face-background 'isearch "yellow2"))
 (when using-mac
   (if nil
-      (set-frame-font "Ubuntu Mono-16"))
+      (set-frame-font "Ubuntu Mono-14"))
   (defun font-large ()
     (interactive)
     (set-frame-font "Monaco-18"))
@@ -2687,7 +2693,7 @@ The host and port are determined from the buffer name."
   (defun font-tiny ()
     (interactive)
     (set-frame-font "Monaco-10"))
-					;; see also ns-popup-font-panel
+  ;; see also ns-popup-font-panel
   (setenv "PATH" (concat "/Users/bart/bin/x86-64_darwin:"
 			 "/Users/bart/bin:"
 			 (getenv "PATH")))

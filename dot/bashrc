@@ -79,8 +79,14 @@ esac
 tcbold=''
 tcoff=''
 case $TERM in
-vt100|xterm-*|vs100)
-	tcbold='[33m[1m'		# bold and yellow
+vt100|xterm*|vs100)
+	if [ -d /proc ]; then
+		# for linux
+		tcbold='[35m[1m'		# bold and cyan
+	else
+		# for other, like osx
+		tcbold='[33m[1m'		# bold and yellow
+	fi
 	tcoff='[m'
 	;;
 esac
