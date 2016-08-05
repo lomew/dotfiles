@@ -101,6 +101,8 @@ PS1="\[$tcbold\]\! \h:\W$\[$tcoff\] "	# XXX I want real bold, this is a hack
 #PS1="\! \h:\W$ "
 set -o noclobber
 ulimit -c unlimited			# big core
+# Some weird localization bullshit
+export LC_ALL='C'
 
 # XXX watch for logins logouts
 # XXX autocorrect
