@@ -13,14 +13,20 @@ alias		 cp='cp -i'
 cd() {
 	builtin cd "$@" && ls
 }
-#alias		 ..='cd ..'
+alias		 ..='cd ..'
 #alias		 ../..='cd ../..'
 #alias		 ../../..='cd ../../..'
 alias		 cd..='cd ..'
 alias		 :cd='builtin cd'
-alias		 d='dirs -v'		# XXX fix this
-alias		 pd='pushd -v'	# XXX fix this
-alias		 o='popd -v'		# XXX fix this
+alias		 d='dirs -v'
+pd() {
+	pushd $1 >/dev/null
+	dirs -v
+}
+o() {
+	popd >/dev/null
+	dirs -v
+}
 alias		ds1='ls -F | grep /'
 ds() {
 	command ls -f "$@" \
