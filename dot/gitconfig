@@ -1,5 +1,6 @@
 [core]
 #	whitespace = -space-before-tab -trailing-space
+	excludesFile = ~/.gitignore
 	pager = less -R
 [color]
 	ui = true
@@ -7,12 +8,14 @@
 	# depends on my "origin" symbolic-ref being set up
 	#logup = log --decorate origin..
 	logup = log --decorate @{u}..
+	logd = log --decorate
 	stat = status
 	co = checkout
 	br = branch
 	ci = commit
 	lsd = log --graph --decorate --oneline --all 
 	rpull = pull --rebase
+	pullff = pull --ff-only
 [user]
 	name = Bart Robinson
 	email = brobinson@twitter.com
