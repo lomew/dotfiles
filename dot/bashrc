@@ -117,6 +117,10 @@ export PAGER=less
 export LESS="-imnz-3"
 [ -d ~/lib ] && export PERLLIB=~/lib
 
+# Prevent tar from putting ._* turds in there.
+# http://superuser.com/questions/259703/get-mac-tar-to-stop-putting-filenames-in-tar-archives
+export COPYFILE_DISABLE=1
+
 [ -f ~/.bash_aliases ] && . ~/.bash_aliases
 
 ## .bashrc ends here
