@@ -1,8 +1,21 @@
 <?xml version="1.0"?>
 <root>
 
+  <devicevendordef>
+    <vendorname>MATIAS</vendorname>
+    <vendorid>0x05ac</vendorid>
+  </devicevendordef>
+  <deviceproductdef>
+    <productname>MATIAS_ERGO_PRO_KEYBOARD</productname>
+    <productid>0x024f</productid>
+  </deviceproductdef>
+
   <!-- HOTKEYS -->
   <!-- adapted from http://apple.stackexchange.com/questions/20010/can-i-create-a-shortcut-to-open-a-specific-application-on-os-x -->
+  <vkopenurldef>
+    <name>KeyCode::VK_OPEN_URL_Spotify</name>
+    <url>file:///Applications/Spotify.app</url>
+  </vkopenurldef>
   <vkopenurldef>
     <name>KeyCode::VK_OPEN_URL_Emacs</name>
     <url>file:///Applications/Emacs.app</url>
@@ -12,8 +25,12 @@
     <url>file:///Applications/Slack.app</url>
   </vkopenurldef>
   <vkopenurldef>
+    <name>KeyCode::VK_OPEN_URL_HipChat</name>
+    <url>file:///Applications/HipChat.app</url>
+  </vkopenurldef>
+  <vkopenurldef>
     <name>KeyCode::VK_OPEN_URL_iTerm</name>
-    <url>file:///Applications/Utilities/iTerm.app</url>
+    <url>file:///Applications/iTerm.app</url>
   </vkopenurldef>
   <vkopenurldef>
     <name>KeyCode::VK_OPEN_URL_Chrome</name>
@@ -22,10 +39,46 @@
   <item>
     <name>Hotkeys for some apps</name>
     <identifier>custom</identifier>
-    <autogen>__KeyToKey__ KeyCode::F4, KeyCode::VK_OPEN_URL_Slack</autogen>
+    <autogen>__KeyToKey__ KeyCode::F1, KeyCode::VK_OPEN_URL_Spotify</autogen>
+    <autogen>__KeyToKey__ KeyCode::F4, KeyCode::VK_OPEN_URL_HipChat</autogen>
     <autogen>__KeyToKey__ KeyCode::F5, KeyCode::VK_OPEN_URL_Emacs</autogen>
     <autogen>__KeyToKey__ KeyCode::F8, KeyCode::VK_OPEN_URL_iTerm</autogen>
     <autogen>__KeyToKey__ KeyCode::F9, KeyCode::VK_OPEN_URL_Chrome</autogen>
+  </item>
+
+  <!-- todo: fix this to allow Fn,key to mean the consumer thing, e.g., fn,f8 to be MUSIC_PLAY -->
+  <item>
+    <name>Override some consumer/system fn keys on Matias keyboard</name>
+    <appendix>This is so I can avoid the system-wide "Use F1, F2, etc. keys as standard function keys" but still have my hotkeys</appendix>
+    <appendix>Also some magic to use mute key for pause/play when double clicked</appendix>
+    <identifier>private.matias_hotkey_and_magic</identifier>
+    <device_only>DeviceVendor::MATIAS, DeviceProduct::MATIAS_ERGO_PRO_KEYBOARD</device_only>
+
+    <!-- f1 -->
+    <autogen>__KeyToKey__ KeyCode::BRIGHTNESS_DOWN, ModifierFlag::NONE,KeyCode::VK_OPEN_URL_Spotify</autogen>
+
+    <!-- f4 -->
+    <autogen>__KeyToKey__ KeyCode::LAUNCHPAD,          KeyCode::VK_OPEN_URL_HipChat</autogen>
+
+    <!-- f8 -->
+    <autogen>__KeyToKey__ ConsumerKeyCode::MUSIC_PLAY, KeyCode::VK_OPEN_URL_iTerm</autogen>
+
+    <!-- f9 -->
+    <autogen>__KeyToKey__ ConsumerKeyCode::MUSIC_NEXT, KeyCode::VK_OPEN_URL_Chrome</autogen>
+
+    <!-- f10 - double click mute to pause/play -->
+    <autogen>
+       __KeyToKey__
+       ConsumerKeyCode::VOLUME_MUTE,
+       KeyCode::VK_NONE,
+
+       Option::KEYTOKEY_DELAYED_ACTION,
+       ConsumerKeyCode::VOLUME_MUTE,
+
+       Option::KEYTOKEY_DELAYED_ACTION_CANCELED_BY, ConsumerKeyCode::VOLUME_MUTE,
+       ConsumerKeyCode::MUSIC_PLAY,
+       KeyCode::VK_KEYTOKEY_DELAYED_ACTION_DROP_EVENT, <!-- drop second mute key event -->
+    </autogen>
   </item>
 
   <list>
@@ -106,29 +159,25 @@
       <autogen>--KeyToKey-- KeyCode::BACKQUOTE, ModifierFlag::OPTION_L, KeyCode::BACKQUOTE, ModifierFlag::COMMAND_L</autogen>
       <autogen>--KeyToKey-- KeyCode::COMMAND_L, KeyCode::OPTION_L</autogen>
     </item>
-    <!-- used to be builtin, copied from https://github.com/tekezo/Karabiner/blob/master/src/core/server/Resources/include/checkbox/pointing_device.xml -->
+
+    <!-- tried this with KeyCode::VK_OPEN_URL_SHELL_sleep, but I think
+         that turns off the network -->
     <item>
-        <name>Use Button4 and Button5 as Back/Forward</name>
-        <item>
-          <name>Set 1: Button4 to Command+[ (Back)</name>
-          <identifier>remap.pointing_button4_to_command_bracket_left</identifier>
-          <autogen>__KeyToKey__ PointingButton::BUTTON4, KeyCode::BRACKET_LEFT, ModifierFlag::COMMAND_L</autogen>
-        </item>
-        <item>
-          <name>Set 1: Button5 to Command+] (Forward)</name>
-          <identifier>remap.pointing_button5_to_command_bracket_right</identifier>
-          <autogen>__KeyToKey__ PointingButton::BUTTON5, KeyCode::BRACKET_RIGHT, ModifierFlag::COMMAND_L</autogen>
-        </item>
-        <item>
-          <name>Set 2: Button4 to Command+] (Forward)</name>
-          <identifier>remap.pointing_button4_to_command_bracket_right</identifier>
-          <autogen>__KeyToKey__ PointingButton::BUTTON4, KeyCode::BRACKET_RIGHT, ModifierFlag::COMMAND_L</autogen>
-        </item>
-        <item>
-          <name>Set 2: Button5 to Command+[ (Back)</name>
-          <identifier>remap.pointing_button5_to_command_bracket_left</identifier>
-          <autogen>__KeyToKey__ PointingButton::BUTTON5, KeyCode::BRACKET_LEFT, ModifierFlag::COMMAND_L</autogen>
-        </item>
-      </item>
+      <name>Lock screen by holding Left Option+Escape</name>
+      <identifier>private.lock_screen_by_holding_loption_esc</identifier>
+      <autogen>
+        __HoldingKeyToKey__
+        KeyCode::ESCAPE, ModifierFlag::OPTION_L,
+
+	@begin
+        KeyCode::VK_NONE,
+        @end
+
+        @begin
+	KeyCode::VK_OPEN_URL_SHELL_pmset_displaysleepnow,
+        @end
+      </autogen>
+    </item>
+
   </list>
 </root>
