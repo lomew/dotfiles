@@ -83,4 +83,7 @@ sf() {
 	echo -n "]50;$*"
 }
 
+# long loony, from brian
+alias lloony='loony -l '\''%(facts:hostname)s,%(groups:role)s,%(groups:platform)s,%(attributes:unmonitored)s,%(attributes:kernel)s,%(attributes:mesos_dedicated)s,%(attributes:mesos_isolation)s,%(attributes:mesos_egress_rate_limit_per_container)s'\'''
+
 ## .bash_aliases end here

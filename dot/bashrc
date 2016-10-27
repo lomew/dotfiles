@@ -112,6 +112,9 @@ export LC_ALL='C'
 
 #PATH=~/bin/@sys:~/bin:/usr/local/sbin:/usr/local/gnu/bin:$PATH:/usr/afsws/bin:/usr/local/etc:/usr/afsws/etc:/usr/etc:/etc:/var/site/etc:/usr/local/contrib/bin:/usr/local/share/contrib/bin
 
+# for n node.js manager thing
+export N_PREFIX=$HOME
+
 export NNTPSERVER=news
 export EDITOR=vi
 export VISUAL=vi

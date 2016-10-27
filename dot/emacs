@@ -157,7 +157,7 @@ regular expression search was done with `string-match'."
  progress-feedback-use-echo-area t		;fontification progress
  require-final-newline		'ask-me
  search-highlight		t
- explicit-shell-file-name	(if (or using-w32 using-mac)
+ explicit-shell-file-name	(if (and nil (or using-w32 using-mac)) ;XXX disabled at twtr
 				    "/bin/tcsh" ;cygwin
 				  (getenv "SHELL"))
  shell-file-name		"/bin/sh"	;quicker
@@ -204,7 +204,7 @@ regular expression search was done with `string-match'."
 					"\\):\\s *\\'")
  ;; Do make -C instead of "cd dir && make" to make jump-to-error work better
  ;; note this relies on /work -> /Users, and the vm having ~/work -> /mnt/hgfs/work
- compile-command		"ssh vlux make -j2 -C /work/lomew/build.va PRETTY=y edge dc dsnap vapython"
+ compile-command		"ssh vbart make -j2 -C /home/brobinson/build"
  compilation-scroll-output	t	;scroll output as it appears
  compilation-error-regexp-systems-list '(gnu 4bsd)
  compilation-message-face	'default ;emacs-23, i don't want underlines
@@ -274,6 +274,9 @@ regular expression search was done with `string-match'."
 		("\\.[pP][Llm]$" . perl-mode)
 		("\\.[1-8]$"	 . text-mode)
 		("\\.jsx$"	 . web-mode)
+		("\\.mesos$"	 . python-mode)
+		("\\.aurora$"	 . python-mode)
+		("SCons"         . python-mode)
 		("GNUmakerules\\(.in\\)?\\'" . makefile-mode))
 	      auto-mode-alist))
 
@@ -567,13 +570,29 @@ regular expression search was done with `string-match'."
              '("melpa" . "https://melpa.org/packages/"))
 (package-initialize)
 
-(load "scala-mode-auto" t t)
+; don't think i need this
+(require 'scala-mode-auto)
+
+;; Higlight current line.  Helps you figure out where you are when you
+;; have a large emacs window up.
+(if (fboundp 'global-hl-line-mode)
+    (global-hl-line-mode 1))
 
 
 ;;;=====================================================================
 ;;; Random functions, macros, and the like.  These are user functions,
 ;;; the programmer functions should go somewhere else.
 ;;;=====================================================================
+
+(defun copy-file-name-to-clipboard ()
+  "Copy the current buffer file name to the clipboard."
+  (interactive)
+  (let ((filename (if (equal major-mode 'dired-mode)
+                      default-directory
+                    (buffer-file-name))))
+    (when filename
+      (kill-new filename)
+      (message "Copied buffer file name '%s' to the clipboard." filename))))
 
 (defun full-screen ()
   (interactive)
@@ -669,6 +688,22 @@ regular expression search was done with `string-match'."
 			(read-from-minibuffer "Run grep (like this): "
 					      (concat grep-command (current-word))
 					      nil nil grep-history)))))
+
+(defun glog-font-lock ()
+  "XXX/BRR this is a hack."
+  (interactive)
+  (make-variable-buffer-local 'font-lock-keywords)
+  (setq font-lock-keywords
+	'(
+	  ("^W[01][0-9][0-9][0-9] .*" 0 font-lock-keyword-face)
+	  ("^E[01][0-9][0-9][0-9] .*" 0 font-lock-warning-face)))
+
+;	  ("^\\[.*warning\\].*" . font-lock-keyword-face)
+;	  ("^\\[.*error\\].*" . bold)
+;	  ("^ASFOUT.*" . font-lock-keyword-face)))
+
+  (font-lock-mode t))
+
 
 (defun sport-font-lock ()
   "XXX/BRR this is a hack."
@@ -1393,10 +1428,14 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
    (list "\C-ca"	'org-agenda)
 ;   (list "\C-cR"	'org-remember)
    (list "\C-cR"	'org-capture)
+   (list "\C-cl"	'org-store-link)
+   (list "\C-ct"	(lambda () (interactive)
+			  (insert comment-start "TODO(brobinson): ")))
 
    (list "\C-k"		'kill-region-or-line) ;usu just kill-line
    (list "\M-#"		'make-side-by-side)
    (list "\C-c#"	'duplicate-window)
+   (list "\C-cy"        'copy-file-name-to-clipboard)
 
    ;(list "\C-xm"	'vm-mail-other-frame)
    (list "\C-xm"	'mu4e-compose-new)
@@ -1410,16 +1449,22 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
   ;; see also visual-line-mode, visual word wrapping
   (setq visual-line-fringe-indicators '(nil right-curly-arrow))
 
-  (eval-after-load "org.el"
+  (eval-after-load "org"
     (lambda ()
       ;; for exporting to markdown
       (add-to-list 'org-export-backends 'md)
       ;; for habit tracking
-      (add-to-list 'org-modules 'org-habit)))
+      (add-to-list 'org-modules 'org-habit)
+      ;; use emacs for directory links, not Finder on OSX
+      (add-to-list 'org-file-apps '(directory . emacs))))
 
   ;; part of clean-view setting
   (setq org-hide-leading-stars  t)
   (setq org-startup-indented t)
+
+  ;; Hide the / and = and * stuff around emphasized text.
+  ;; Not sure I like this.
+  (setq org-hide-emphasis-markers t)
 
   ;; I don't often want sub/super scripting.  But when I do this allows it via x_{i}
   (setq org-use-sub-superscripts "{}")
@@ -1496,6 +1541,10 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 	  (tags  . "  %-12:c")
 	  (search . "  %-12:c")))
 
+  ;; This makes my agenda views work so that selecting B tasks selects
+  ;; ones that are explicitly marked B, not the unmarked ones
+  (setq org-default-priority ?C)
+
   ;; Custom agenda view, show today and upcoming on {C-c a w} for work
   ;; and {C-c a h} for personal
   (setq org-agenda-custom-commands
@@ -1516,7 +1565,7 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 ;			)))
 	   ((tags-todo "+incoming") ;incoming
 	    (tags-todo "+PRIORITY=\"A\"|+today") ;active
-	    (tags-todo "+PRIORITY=\"C\"|+upcoming"))		   ;upcoming
+	    (tags-todo "+PRIORITY=\"B\"|+upcoming"))		   ;upcoming
 	   ((org-agenda-files (list (~/ "work/org/todo")))))
 	  ("h" "Home tasks"
 	   ((tags-todo "+PRIORITY=\"A\"|+today|+incoming")
@@ -1638,7 +1687,7 @@ Not very robust but semi-useful for s p e c i a l  effects in comments."
 
 (defconst my-c++-abbrevs
   '(("exc"	"extern \"C\""		nil 0)
-    ("tem"	"template <class"	nil 0)
+    ("tem"	"template <typename"	nil 0)
     ("vl"	"virtual"		nil 0)
     ("cout"	"cout <<"		nil 0)
     ("cin"	"cin >>"		nil 0)
@@ -1770,7 +1819,8 @@ pair."
 	  (error "cannot determine related file"))))))
 
 (defun switch-c-dot-and-arrow ()
-  "Toggle . and -> structure accessors."
+  "Toggle . and -> structure accessors.
+Invoke this when you are over a . or - char."
   (interactive)
   (cond ((looking-at "\\.")
 	 (delete-char 1)
@@ -1787,6 +1837,12 @@ pair."
 		(looking-at "->")))
 	 (forward-char -1)
 	 (switch-c-dot-and-arrow))))
+
+(defun cpp-movify ()
+  "Wrap the current word with a std::move."
+  (interactive)
+  ;; todo, current-word finds it but doesn't tell us where it is
+  )
 
 (defun c-set-my-page-delimiter ()
   ;; Want flexible page-delimiter since beloved ^Ls got punted.  Look
@@ -1821,6 +1877,10 @@ pair."
 	   (string-match "/mixt/quicktime/" buffer-file-truename))
       (setq c-basic-offset 2))
 
+  ;; Twitter uses 2col
+  (if (and buffer-file-truename
+	   (string-match "/workspace/" buffer-file-truename))
+      (setq c-basic-offset 2))
 
   ;; subversion uses gnu style
   (if (and buffer-file-truename
@@ -2694,8 +2754,8 @@ The host and port are determined from the buffer name."
     (interactive)
     (set-frame-font "Monaco-10"))
   ;; see also ns-popup-font-panel
-  (setenv "PATH" (concat "/Users/bart/bin/x86-64_darwin:"
-			 "/Users/bart/bin:"
+  (setenv "PATH" (concat (getenv "HOME") "/bin/x86-64_darwin:"
+			 (getenv "HOME") "/bin:"
 			 (getenv "PATH")))
   (add-to-list 'exec-path "/usr/local/bin") ;find brew stuff
   (font-normal)
